@@ -16,7 +16,6 @@ experiments.
 
 ## About me
 
-I've:
 - Contributed some improvements to the **Python** client.
 - Created the **SQL** and **snd-s7** clients.
 - Helped with the [migration](https://github.com/Olical/conjure/discussions/605)
@@ -37,6 +36,9 @@ way things are handled are confusing and not what is expected if you type things
 into the Python command line REPL directly.
 
 ### How to use this Python client
+
+*NOTE: This should work with the **master** branch of Conjure. If not use the
+**main** branch.*
 
 Have your plugin manager clone this repo and configure your Conjure plugin to
 use `conjurex.client.python.stdio` as the filetype handler for Python files.
