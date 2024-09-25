@@ -90,11 +90,20 @@ local function get_expression_result(msgs)
     return result
   end
 end
-local function unbatch(msgs)
+local function get_all_console_output(msgs)
   local function _12_(_241)
+    return (comment_prefix .. "(out) " .. _241)
+  end
+  return a.map(_12_, msgs)
+end
+local function get_all_output_msgs(msgs)
+  return str.join("\n", msgs)
+end
+local function unbatch(msgs)
+  local function _13_(_241)
     return (a.get(_241, "out") or a.get(_241, "err"))
   end
-  return str.join("", a.map(_12_, msgs))
+  return str.join("", a.map(_13_, msgs))
 end
 local function log_repl_output(msgs)
   local msgs0 = format_msg(unbatch(msgs))
@@ -111,20 +120,25 @@ local function log_repl_output(msgs)
   end
 end
 local function eval_str(opts)
-  local function _15_(repl)
-    local function _16_(msgs)
-      log_repl_output(msgs)
-      if opts["on-result"] then
-        local msgs0 = format_msg(unbatch(msgs))
-        local cmd_result = get_expression_result(msgs0)
-        return opts["on-result"](cmd_result)
-      else
-        return nil
-      end
+  local function return_handler(msgs)
+    log.append({"client.python.stdio: in return-handler; msgs>", a["pr-str"](msgs), "<"})
+    local msgs0 = format_msg(unbatch(msgs))
+    local cmd_result = get_all_output_msgs(msgs0)
+    local console_result = get_all_console_output(msgs0)
+    if cmd_result then
+      log.append(console_result)
+    else
     end
-    return repl.send(prep_code(opts.code), _16_, {["batch?"] = true})
+    if opts["on-result"] then
+      return opts["on-result"](cmd_result)
+    else
+      return nil
+    end
   end
-  return with_repl_or_warn(_15_)
+  local function _18_(repl)
+    return repl.send(prep_code(opts.code), return_handler, {["batch?"] = true})
+  end
+  return with_repl_or_warn(_18_)
 end
 local function eval_file(opts)
   return eval_str(a.assoc(opts, "code", a.slurp(opts["file-path"])))
@@ -143,6 +157,7 @@ local function display_repl_status(status)
   return log.append({(comment_prefix .. cfg({"command"}) .. " (" .. (status or "no status") .. ")")}, {["break?"] = true})
 end
 local function stop()
+  log.append({(comment_prefix .. " " .. version .. ".stop called")})
   local repl = state("repl")
   if repl then
     repl.destroy()
@@ -152,35 +167,36 @@ local function stop()
     return nil
   end
 end
-local initialise_repl_code = str.join("\n", {"import sys", "def conjure_format_output(val):", "    print(repr(val))", "sys.displayhook = conjure_format_output\n", "__name__ = '__repl__'"})
+local initialise_repl_code = str.join("__name__ = '__repl__'", "\n")
 local function start()
   log.append({(comment_prefix .. "Starting Python client...")})
   if state("repl") then
     return log.append({(comment_prefix .. "Can't start, REPL is already running."), (comment_prefix .. "Stop the REPL with " .. config["get-in"]({"mapping", "prefix"}) .. cfg({"mapping", "stop"}))}, {["break?"] = true})
   else
-    local function _20_()
+    local function _21_()
       if vim.treesitter.language.require_language then
         return vim.treesitter.language.require_language("python")
       else
         return vim.treesitter.require_language("python")
       end
     end
-    if not pcall(_20_) then
+    if not pcall(_21_) then
       return log.append({(comment_prefix .. "(error) The python client requires a python treesitter parser in order to function."), (comment_prefix .. "(error) See https://github.com/nvim-treesitter/nvim-treesitter"), (comment_prefix .. "(error) for installation instructions.")})
     else
-      local function _22_()
-        local function _23_(repl)
-          local function _24_(msgs)
+      local function _23_()
+        local function _24_(repl)
+          local function _25_(msgs)
             return nil
           end
-          return repl.send(prep_code(initialise_repl_code), _24_, nil)
+          return repl.send(prep_code(initialise_repl_code), _25_, nil)
         end
-        return display_repl_status("started", with_repl_or_warn(_23_))
+        return display_repl_status("started", with_repl_or_warn(_24_))
       end
-      local function _25_(err)
+      local function _26_(err)
         return display_repl_status(err)
       end
-      local function _26_(code, signal)
+      local function _27_(code, signal)
+        log.append({(comment_prefix .. "on-exit: code=>" .. code .. "<, signal=" .. signal)})
         if (("number" == type(code)) and (code > 0)) then
           log.append({(comment_prefix .. "process exited with code " .. code)})
         else
@@ -191,22 +207,23 @@ local function start()
         end
         return stop()
       end
-      local function _29_(msg)
+      local function _30_(msg)
         return log.dbg(format_msg(unbatch({msg})), {["join-first?"] = true})
       end
-      return a.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt-pattern"}), cmd = cfg({"command"}), ["delay-stderr-ms"] = cfg({"delay-stderr-ms"}), ["on-success"] = _22_, ["on-error"] = _25_, ["on-exit"] = _26_, ["on-stray-output"] = _29_}))
+      return a.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt-pattern"}), cmd = cfg({"command"}), ["delay-stderr-ms"] = cfg({"delay-stderr-ms"}), ["on-success"] = _23_, ["on-error"] = _26_, ["on-exit"] = _27_, ["on-stray-output"] = _30_}))
     end
   end
 end
 local function on_exit()
+  log.append({(version .. ".on-exit called")})
   return stop()
 end
 local function interrupt()
-  local function _32_(repl)
+  local function _33_(repl)
     log.append({(comment_prefix .. " Sending interrupt signal.")}, {["break?"] = true})
     return repl["send-signal"](vim.loop.constants.SIGINT)
   end
-  return with_repl_or_warn(_32_)
+  return with_repl_or_warn(_33_)
 end
 local function on_load()
   if config["get-in"]({"client_on_load"}) then
@@ -220,4 +237,4 @@ local function on_filetype()
   mapping.buf("PythonStop", cfg({"mapping", "stop"}), stop, {desc = "Stop the Python REPL"})
   return mapping.buf("PythonInterrupt", cfg({"mapping", "interrupt"}), interrupt, {desc = "Interrupt the current evaluation"})
 end
-return {["buf-suffix"] = buf_suffix, ["comment-prefix"] = comment_prefix, ["form-node?"] = form_node_3f, ["is-assignment?"] = is_assignment_3f, ["is-expression?"] = is_expression_3f, ["str-is-python-expr?"] = str_is_python_expr_3f, ["format-msg"] = format_msg, unbatch = unbatch, ["eval-str"] = eval_str, ["eval-file"] = eval_file, ["get-help"] = get_help, ["doc-str"] = doc_str, stop = stop, ["initialise-repl-code"] = initialise_repl_code, start = start, ["on-load"] = on_load, ["on-exit"] = on_exit, interrupt = interrupt, ["on-filetype"] = on_filetype, version = version}
+return {["buf-suffix"] = buf_suffix, ["comment-prefix"] = comment_prefix, ["doc-str"] = doc_str, ["eval-file"] = eval_file, ["eval-str"] = eval_str, ["form-node?"] = form_node_3f, ["format-msg"] = format_msg, ["get-help"] = get_help, ["initialise-repl-code"] = initialise_repl_code, interrupt = interrupt, ["is-assignment?"] = is_assignment_3f, ["is-expression?"] = is_expression_3f, ["on-exit"] = on_exit, ["on-filetype"] = on_filetype, ["on-load"] = on_load, start = start, stop = stop, ["str-is-python-expr?"] = str_is_python_expr_3f, unbatch = unbatch, version = version}

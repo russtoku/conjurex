@@ -82,8 +82,7 @@
   (when (and state.hud.id
              (> (hud-lifetime-ms)
                 (config.get-in [:log :hud :minimum_lifetime_ms])))
-    (let [original-timer-id state.hud.timer-id
-          delay (config.get-in [:log :hud :passive_close_delay])]
+    (let [delay (config.get-in [:log :hud :passive_close_delay])]
       (if (= 0 delay)
         (close-hud)
         (when (not (a.get-in state [:hud :timer]))
@@ -96,7 +95,7 @@
     (->> (vim.api.nvim_buf_get_lines buf 0 -1 false)
          (a.kv-pairs)
          (a.filter
-           (fn [[n s]]
+           (fn [[_ s]]
              (= s break-str)))
          (a.map a.first))))
 
@@ -297,13 +296,12 @@
 
           ;; This hack keeps all log window view ports correct after trim.
           ;; Without it the text moves off screen in the HUD.
-          (let [line-count (vim.api.nvim_buf_line_count buf)]
-            (with-buf-wins
-              buf
-              (fn [win]
-                (let [[row col] (vim.api.nvim_win_get_cursor win)]
-                  (vim.api.nvim_win_set_cursor win [1 0])
-                  (vim.api.nvim_win_set_cursor win [row col]))))))))))
+          (with-buf-wins
+            buf
+            (fn [win]
+              (let [[row col] (vim.api.nvim_win_get_cursor win)]
+                (vim.api.nvim_win_set_cursor win [1 0])
+                (vim.api.nvim_win_set_cursor win [row col])))))))))
 
 (fn last-line [buf extra-offset]
   (a.first
@@ -332,11 +330,6 @@
                     (config.get-in [:log :jump_to_latest :cursor_scroll_position]))]
           (when cmd
             (vim.api.nvim_win_call win (fn [] (vim.api.nvim_command {:cmd cmd} {})))))))))
-
-(vim.api.nvim_command "pwd") ; nil
-; (out) /Users/russ/Projects/Conjure/Python/conj-rt/fnl/conj-rt
-(vim.api.nvim_cmd {:cmd "pwd"} {}) ; ""
-(vim.api.nvim_cmd {:cmd "pwd"} {:output true}) ; "/Users/russ/Projects/Conjure/Python/conj-rt/fnl/conj-rt"
 
 (fn append [lines opts]
   (let [line-count (a.count lines)]

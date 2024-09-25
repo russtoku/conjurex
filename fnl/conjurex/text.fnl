@@ -2,10 +2,14 @@
 (local a (autoload :nfnl.core))
 (local str (autoload :nfnl.string))
 
+(local version "conjurex.text")
+
 (fn trailing-newline? [s]
   (string.match s "\r?\n$"))
 
 (fn trim-last-newline [s]
+  "Returns s without a trailing newline and 1 when trailing newline is stripped
+  or 0 when not."
   (string.gsub s "\r?\n$" ""))
 
 (fn left-sample [s limit]
@@ -23,6 +27,9 @@
   (str.split s "\r?\n"))
 
 (fn prefixed-lines [s prefix opts]
+  "Returns a list of lines split from a string. Each line is prefixed with the
+  prefix string. The option, :skip-first?, will cause the first line not to be
+  prefixed."
   (->> (split-lines s)
        (a.map-indexed
          (fn [[n line]]

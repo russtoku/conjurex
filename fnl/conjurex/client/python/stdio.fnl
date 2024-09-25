@@ -133,6 +133,11 @@
        (a.filter #(~= "" $1))
        (a.filter #(not (is-dots? $1)))))
 
+;; FIXME: Incorrect assumption: The last line in msgs from the REPL is the return
+;; value or results of "evaluating" the Python expression, variable, or
+;; statement. get-console-output-msgs and get-expression-result embody this
+;; assumption. Also log-repl-output makes this assumption because it calls
+;; get-console-output-msgs. Additionally, eval-str calls log-repl-output.
 (fn get-console-output-msgs [msgs]
   (->> (a.butlast msgs)
        (a.map #(.. comment-prefix "(out) " $1))))
@@ -144,6 +149,18 @@
       nil
       result)))
 
+(fn get-all-console-output [msgs]
+  "Return a sequential table of message lines prefixed with the comment-prefix
+  and '(out)'. This is intended to be passed to the log.append function."
+  (->> msgs
+       (a.map #(.. comment-prefix "(out) " $1))))
+
+(fn get-all-output-msgs [msgs]
+  "Return the msgs in a single string. This is intended to be inserted into the
+  source buffer as a comment or as virtual text."
+  (str.join "\n" msgs))
+
+; Does this join the stdout and stderr msgs?
 (fn unbatch [msgs]
   (->> msgs
        (a.map #(or (a.get $1 :out) (a.get $1 :err)))
@@ -159,16 +176,25 @@
       (log.append [cmd-result]))))
 
 (fn eval-str [opts]
+  ;; Handle the return messages from the REPL. This is intended to be passed to
+  ;; the send function of the REPL instance.
+  ;; Decides what is returned as the result of an evaluation vs. printed
+  ;; outpupt. For the standard Python REPL, it is the same thing.
+  (fn return-handler [msgs]
+    (log.append ["client.python.stdio: in return-handler; msgs>" (a.pr-str msgs) "<"])
+    (let [msgs (-> msgs unbatch format-msg)
+          cmd-result (get-all-output-msgs msgs)
+          console-result (get-all-console-output msgs)]
+      (when cmd-result
+        (log.append console-result))
+      (when opts.on-result ; what sets opts.on-result?
+        (opts.on-result cmd-result))))
+
   (with-repl-or-warn
     (fn [repl]
       (repl.send
         (prep-code opts.code)
-        (fn [msgs]
-          (log-repl-output msgs)
-          (when opts.on-result
-            (let [msgs (-> msgs unbatch format-msg)
-                  cmd-result (get-expression-result msgs)]
-              (opts.on-result cmd-result))))
+        return-handler
         {:batch? true}))))
 
 (fn eval-file [opts]
@@ -189,6 +215,7 @@
     {:break? true}))
 
 (fn stop []
+  (log.append [(.. comment-prefix " " version ".stop called")])
   (let [repl (state :repl)]
     (when repl
       (repl.destroy)
@@ -196,22 +223,10 @@
       (a.assoc (state) :repl nil))))
 
 (local initialise-repl-code
-  ;; By default, there is no way for us to tell the difference between
-  ;; normal stdout log messages and the result of the expression we evaluated.
-  ;; This is because if an expression results in the literal value None, the python
-  ;; interpreter will not print out anything.
-  ;; Replacing this hook ensures that the last line in the output after
-  ;; sending a command is the result of the command.
-  ;; Relevant docs: https://docs.python.org/3/library/sys.html#sys.displayhook
-
-  ;; We also set the `__name__` to something else so `__main__` blocks aren't executed.
+  ;; We set the `__name__` to something else so `__main__` blocks aren't executed.
   (str.join
-    "\n"
-    ["import sys"
-     "def conjure_format_output(val):"
-     "    print(repr(val))"
-     "sys.displayhook = conjure_format_output\n"
-     "__name__ = '__repl__'"]))
+    "__name__ = '__repl__'"
+    "\n"))
 
 (fn start []
   (log.append [(.. comment-prefix "Starting Python client...")])
@@ -227,9 +242,9 @@
       (log.append [(.. comment-prefix "(error) The python client requires a python treesitter parser in order to function.")
                    (.. comment-prefix "(error) See https://github.com/nvim-treesitter/nvim-treesitter")
                    (.. comment-prefix "(error) for installation instructions.")])
-      (a.assoc
+      (a.assoc  ; Start a REPL and add it to our client state.
         (state) :repl
-        (stdio.start
+        (stdio.start ; stdio.start takes a table of opts to create a REPL process.
           {:prompt-pattern (cfg [:prompt-pattern])
            :cmd (cfg [:command])
            :delay-stderr-ms (cfg [:delay-stderr-ms])
@@ -250,6 +265,8 @@
 
            :on-exit
            (fn [code signal]
+             ;; FIXME: The log statements don't appear in the log file.
+             (log.append [(.. comment-prefix "on-exit: code=>" code "<, signal=" signal)])
              (when (and (= :number (type code)) (> code 0))
                (log.append [(.. comment-prefix "process exited with code " code)]))
              (when (and (= :number (type signal)) (> signal 0))
@@ -261,6 +278,7 @@
              (log.dbg (-> [msg] unbatch format-msg) {:join-first? true}))})))))
 
 (fn on-exit []
+  (log.append [(.. version  ".on-exit called")])
   (stop))
 
 (fn interrupt []
@@ -292,21 +310,21 @@
 
 {: buf-suffix
  : comment-prefix
+ : doc-str
+ : eval-file
+ : eval-str
  : form-node?
+ : format-msg
+ : get-help
+ : initialise-repl-code
+ : interrupt
  : is-assignment?
  : is-expression?
- : str-is-python-expr?
- : format-msg
- : unbatch
- : eval-str
- : eval-file
- : get-help
- : doc-str
- : stop
- : initialise-repl-code
- : start
- : on-load
  : on-exit
- : interrupt
  : on-filetype
+ : on-load
+ : start
+ : stop
+ : str-is-python-expr?
+ : unbatch
  : version}

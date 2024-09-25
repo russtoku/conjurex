@@ -67,7 +67,6 @@ local function hud_lifetime_ms()
 end
 local function close_hud_passive()
   if (state.hud.id and (hud_lifetime_ms() > config["get-in"]({"log", "hud", "minimum_lifetime_ms"}))) then
-    local original_timer_id = state.hud["timer-id"]
     local delay = config["get-in"]({"log", "hud", "passive_close_delay"})
     if (0 == delay) then
       return close_hud()
@@ -85,7 +84,7 @@ end
 local function break_lines(buf)
   local break_str = _break()
   local function _11_(_10_)
-    local n = _10_[1]
+    local _ = _10_[1]
     local s = _10_[2]
     return (s == break_str)
   end
@@ -254,7 +253,6 @@ local function trim(buf)
     break_line = a.some(_33_, break_lines(buf))
     if break_line then
       vim.api.nvim_buf_set_lines(buf, 0, break_line, false, {})
-      local line_count0 = vim.api.nvim_buf_line_count(buf)
       local function _35_(win)
         local _let_36_ = vim.api.nvim_win_get_cursor(win)
         local row = _let_36_[1]
@@ -294,9 +292,6 @@ local function jump_to_latest()
   end
   return with_buf_wins(buf, _39_)
 end
-vim.api.nvim_command("pwd")
-vim.api.nvim_cmd({cmd = "pwd"}, {})
-vim.api.nvim_cmd({cmd = "pwd"}, {output = true})
 local function append(lines, opts)
   local line_count = a.count(lines)
   if (line_count > 0) then

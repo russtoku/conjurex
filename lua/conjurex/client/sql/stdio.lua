@@ -6,7 +6,7 @@ local client = autoload("conjurex.client")
 local config = autoload("conjure.config")
 local log = autoload("conjurex.log")
 local mapping = autoload("conjure.mapping")
-local stdio = autoload("conjurex.remote.stdio")
+local stdio = autoload("conjurex.remote.stdio-rt")
 local str = autoload("nfnl.string")
 config.merge({client = {sql = {stdio = {command = "psql postgres://postgres:postgres@localhost/postgres", prompt_pattern = "=> "}}}})
 if config["get-in"]({"mapping", "enable_defaults"}) then

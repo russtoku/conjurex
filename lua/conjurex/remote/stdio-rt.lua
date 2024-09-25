@@ -6,6 +6,7 @@ local client = autoload("conjurex.client")
 local log = autoload("conjurex.log")
 local str = autoload("nfnl.string")
 local uv = vim.loop
+local version = "conjurex.remote.stdio-rt"
 local function parse_prompt(s, pat)
   if s:find(pat) then
     return true, s:gsub(pat, "")
@@ -165,4 +166,4 @@ local function start(opts)
     return destroy()
   end
 end
-return {["parse-cmd"] = parse_cmd, start = start}
+return {["parse-cmd"] = parse_cmd, start = start, version = version}

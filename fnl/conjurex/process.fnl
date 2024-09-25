@@ -1,6 +1,5 @@
 (local {: autoload} (require :nfnl.module))
 (local a (autoload :nfnl.core))
-(local nvim (autoload :conjure.aniseed.nvim)) ;; FIXME: Replace with vim.api.nvim_*.
 (local str (autoload :nfnl.string))
 
 (local version "conjurex")
@@ -36,20 +35,6 @@
         (when on-exit
           (on-exit proc))))))
 
-;; TODO When Neovim 0.5 is stable we can pass a Lua function across this
-;; boundary. Until then, yucky gross stuff.
-;; This is absolutely horrible, but there's no other way to do it if I want to
-;; support anything < 0.5 for now.
-;; So rather than just using a closure to pass the proc into the exit fn, I
-;; have to go through a VimL function that relies on a global table of jobs to
-;; look the data back up.
-(nvim.ex.function_
-  (str.join
-    "\n"
-    ["ConjureProcessOnExit(...)"
-     "call luaeval(\"require('conjure.process')['on-exit'](unpack(_A))\", a:000)"
-     "endfunction"]))
-
 (fn execute [cmd opts]
   (let [win (vim.api.nvim_tabpage_get_win 0)
         original-buf (vim.api.nvim_win_get_buf win)
@@ -66,7 +51,6 @@
     (vim.api.nvim_win_set_buf win original-buf)
     (tset state.jobs job-id proc)
     (a.assoc proc :job-id job-id)))
-
 
 (fn stop [proc]
   (when (running? proc)

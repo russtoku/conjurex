@@ -3,8 +3,9 @@
 (local client (autoload :conjurex.client))
 (local log (autoload :conjurex.log))
 (local str (autoload :nfnl.string))
-
 (local uv vim.loop)
+
+(local version "conjurex.remote.stdio-rt")
 
 (fn parse-prompt [s pat]
   (if (s:find pat)
@@ -151,4 +152,4 @@
           (client.schedule #(opts.on-error pid-or-err))
           (destroy))))))
 
-{: parse-cmd : start}
+{: parse-cmd : start : version}

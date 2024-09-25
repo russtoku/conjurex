@@ -2,7 +2,6 @@
 local _local_1_ = require("nfnl.module")
 local autoload = _local_1_["autoload"]
 local a = autoload("nfnl.core")
-local nvim = autoload("conjure.aniseed.nvim")
 local str = autoload("nfnl.string")
 local version = "conjurex"
 local function executable_3f(cmd)
@@ -32,7 +31,6 @@ local function on_exit(job_id)
     return nil
   end
 end
-nvim.ex.function_(str.join("\n", {"ConjureProcessOnExit(...)", "call luaeval(\"require('conjure.process')['on-exit'](unpack(_A))\", a:000)", "endfunction"}))
 local function execute(cmd, opts)
   local win = vim.api.nvim_tabpage_get_win(0)
   local original_buf = vim.api.nvim_win_get_buf(win)

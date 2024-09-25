@@ -5,8 +5,8 @@ local a = autoload("nfnl.core")
 local client = autoload("conjurex.client")
 local log = autoload("conjurex.log")
 local str = autoload("nfnl.string")
-local version = "conjurex.remote.stdio"
 local uv = vim.loop
+local version = "conjurex.remote.stdio"
 local function parse_prompt(s, pat)
   if s:find(pat) then
     return true, s:gsub(pat, "")
@@ -32,11 +32,13 @@ local function extend_env(vars)
   return a.map(_5_, a["kv-pairs"](a.merge(vim.fn.environ(), vars)))
 end
 local function start(opts)
+  log.dbg(version, ": start: opts>", a["pr-str"](opts), "<")
   local stdin = uv.new_pipe(false)
   local stdout = uv.new_pipe(false)
   local stderr = uv.new_pipe(false)
   local repl = {queue = {}, current = nil}
   local function destroy()
+    log.dbg(version, ": start: destroy")
     local function _6_()
       return stdout:read_stop()
     end
@@ -66,27 +68,30 @@ local function start(opts)
         return repl.handle:close()
       end
       pcall(_12_)
+      log.dbg(version, ": destroy: sent SIGINT to handle>", a["pr-str"](repl.handle), "<")
     else
     end
     return nil
   end
   local function on_exit(code, signal)
+    log.dbg(version, ": on-exit: code>", a["pr-str"](code), "<\nsignal>", a["pr-str"](signal), "<")
     destroy()
     return client.schedule(opts["on-exit"], code, signal)
   end
   local function next_in_queue()
+    log.dbg(version, ": next-in-queue: repl.queue>", a["pr-str"](repl.queue), "<")
     local next_msg = a.first(repl.queue)
     if (next_msg and not repl.current) then
       table.remove(repl.queue, 1)
       a.assoc(repl, "current", next_msg)
-      log.dbg("send", next_msg.code)
+      log.dbg(version, ": send>", a["pr-str"](next_msg.code), "<")
       return stdin:write(next_msg.code)
     else
       return nil
     end
   end
   local function on_message(source, err, chunk)
-    log.dbg("receive", source, err, chunk)
+    log.dbg(version, ": receive from>", a["pr-str"](source), "<\nerr>", err, "<\nchunk>", a["pr-str"](chunk), "<")
     if err then
       opts["on-error"](err)
       return destroy()
@@ -95,6 +100,9 @@ local function start(opts)
         local done_3f, result = parse_prompt(chunk, opts["prompt-pattern"])
         local cb = a["get-in"](repl, {"current", "cb"}, opts["on-stray-output"])
         if cb then
+          log.dbg(version, ": received from ", source, "\nerr>", err, "<\nchunk>", a["pr-str"](chunk), "<")
+          log.dbg(version, ":   err>", err, "<")
+          log.dbg(version, ":   chunk>", a["pr-str"](chunk), "<")
           local function _15_()
             return cb({[source] = result, ["done?"] = done_3f})
           end

@@ -3,6 +3,7 @@ local _local_1_ = require("nfnl.module")
 local autoload = _local_1_["autoload"]
 local a = autoload("nfnl.core")
 local str = autoload("nfnl.string")
+local version = "conjurex.text"
 local function trailing_newline_3f(s)
   return string.match(s, "\13?\n$")
 end
