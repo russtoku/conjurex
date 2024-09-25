@@ -1,11 +1,11 @@
 (local {: autoload} (require :nfnl.module))
-(local a (autoload :conjure.aniseed.core))
-(local str (autoload :conjure.aniseed.string))
-(local client (autoload :conjure.client))
-(local log (autoload :conjure.log))
-(local stdio (autoload :conjure.remote.stdio-rt))
+(local a (autoload :nfnl.core))
+(local client (autoload :conjurex.client))
 (local config (autoload :conjure.config))
+(local log (autoload :conjurex.log))
 (local mapping (autoload :conjure.mapping))
+(local stdio (autoload :conjurex.remote.stdio))
+(local str (autoload :nfnl.string))
 
 ;;------------------------------------------------------------
 ;; Based on fnl/conjure/client/fennel/stdio.fnl.
@@ -167,16 +167,16 @@
     interrupt
     {:desc "Interrupt the current REPL"}))
 
-{: buf-suffix
- : comment-prefix
- : form-node?
+{: ->list
+ : buf-suffix
  : comment-node?
- : ->list
- : eval-str
+ : comment-prefix
  : eval-file
+ : eval-str
+ : form-node?
  : interrupt
- : stop
- : start
- : on-load
  : on-exit
- : on-filetype}
+ : on-filetype
+ : on-load
+ : start
+ : stop}

@@ -1,8 +1,8 @@
 (local {: describe : it} (require :plenary.busted))
 (local assert (require :luassert.assert))
-(local text (require :conj-rt.text))
+(local text (require :conjurex.text))
 
-(describe "conj-rt.text"
+(describe "conjurex.text"
   (fn []
     (it "chars splits string into characters"
       (fn []

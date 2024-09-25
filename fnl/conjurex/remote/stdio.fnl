@@ -1,9 +1,10 @@
 (local {: autoload} (require :nfnl.module))
-(local a (autoload :conjure.aniseed.core))
-(local str (autoload :conjure.aniseed.string))
-(local client (autoload :conjure.client))
-(local log (autoload :conjure.log))
+(local a (autoload :nfnl.core))
+(local client (autoload :conjurex.client))
+(local log (autoload :conjurex.log))
+(local str (autoload :nfnl.string))
 
+(local version "conjurex.remote.stdio")
 (local uv vim.loop)
 
 (fn parse-prompt [s pat]
@@ -57,7 +58,7 @@
       (pcall #(stderr:close))
       (pcall #(stdin:close))
       (when repl.handle
-        (pcall #(uv.process_kill repl.handle))
+        (pcall #(uv.process_kill repl.handle uv.constants.SIGINT))
         (pcall #(repl.handle:close)))
       nil)
 
@@ -146,5 +147,4 @@
           (client.schedule #(opts.on-error pid-or-err))
           (destroy))))))
 
-{: parse-cmd
- : start}
+{: parse-cmd : start : version}

@@ -1,15 +1,15 @@
 (local {: autoload} (require :nfnl.module))
-(local a (autoload :conjure.aniseed.core))
-(local extract (autoload :conjure.extract))
-(local str (autoload :conjure.aniseed.string))
-(local stdio (autoload :conjure.remote.stdio))
-(local config (autoload :conjure.config))
-(local text (autoload :conjure.text))
-(local mapping (autoload :conjure.mapping))
-(local client (autoload :conjure.client))
-(local log (autoload :conjure.log))
-(local ts (autoload :conjure.tree-sitter))
+(local a (autoload :nfnl.core))
 (local b64 (autoload :conjure.remote.transport.base64))
+(local client (autoload :conjurex.client))
+(local config (autoload :conjure.config))
+(local log (autoload :conjurex.log))
+(local mapping (autoload :conjure.mapping))
+(local stdio (autoload :conjurex.remote.stdio))
+(local str (autoload :nfnl.string))
+(local text (autoload :conjurex.text))
+
+(local version "conjurex.client.python.stdio")
 
 (config.merge
   {:client
@@ -308,4 +308,5 @@
  : on-load
  : on-exit
  : interrupt
- : on-filetype }
+ : on-filetype
+ : version}

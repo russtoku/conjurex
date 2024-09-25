@@ -1,11 +1,11 @@
 (local {: autoload} (require :nfnl.module))
-(local a (autoload :conjure.aniseed.core))
-(local nvim (autoload :conjure.aniseed.nvim))
-(local fennel (autoload :conjure.aniseed.fennel))
-(local str (autoload :conjure.aniseed.string))
+(local a (autoload :nfnl.core))
 (local config (autoload :conjure.config))
 (local dyn (autoload :conjure.dynamic))
+(local fennel (autoload :conjure.aniseed.fennel))
+(local str (autoload :nfnl.string))
 
+(local version "conjurex.client")
 (local state-key (dyn.new #(do :default)))
 
 (local state
@@ -45,7 +45,7 @@
                 :module-name name
                 :module result})
       (when (and result.on-load
-                 (not nvim.wo.diff)
+                 (not vim.wo.diff)
                  (config.get-in [:client_on_load]))
         (vim.schedule result.on-load)))
 
@@ -53,8 +53,8 @@
       result
       (error result))))
 
-(local filetype (dyn.new #(do nvim.bo.filetype)))
-(local extension (dyn.new #(nvim.fn.expand "%:e")))
+(local filetype (dyn.new #(do vim.bo.filetype)))
+(local extension (dyn.new #(vim.fn.expand "%:e")))
 
 (fn with-filetype [ft f ...]
   (dyn.bind
@@ -125,17 +125,18 @@
       (with-filetype filetype f))
     (a.vals loaded)))
 
-{: state-key
- : set-state-key!
+{: call
+ : current
+ : current-client-module-name
+ : each-loaded-client
+ : get
  : multiple-states?
  : new-state
- : with-filetype
- : wrap
- : schedule-wrap
- : schedule
- : current-client-module-name
- : current
- : get
- : call
  : optional-call
- : each-loaded-client}
+ : schedule
+ : schedule-wrap
+ : set-state-key!
+ : state-key
+ : version
+ : with-filetype
+ : wrap}

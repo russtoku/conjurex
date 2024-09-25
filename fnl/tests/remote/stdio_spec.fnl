@@ -1,6 +1,6 @@
 (local {: describe : it} (require :plenary.busted))
 (local assert (require :luassert.assert))
-(local stdio (require :conj-rt.remote.stdio))
+(local stdio (require :conjurex.remote.stdio))
 
 (describe "conjure.remote.stdio"
   (fn []

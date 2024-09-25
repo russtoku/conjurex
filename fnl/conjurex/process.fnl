@@ -1,7 +1,9 @@
 (local {: autoload} (require :nfnl.module))
-(local a (autoload :conjure.aniseed.core))
-(local nvim (autoload :conjure.aniseed.nvim))
-(local str (autoload :conjure.aniseed.string))
+(local a (autoload :nfnl.core))
+(local nvim (autoload :conjure.aniseed.nvim)) ;; FIXME: Replace with vim.api.nvim_*.
+(local str (autoload :nfnl.string))
+
+(local version "conjurex")
 
 ;; For the execution of external processes through Neovim's terminal
 ;; integration. This module only cares about checking for some required program
@@ -15,7 +17,7 @@
 (fn executable? [cmd]
   "Check if the given program name can be found on the system. If you give it a
   full command with arguments it'll just check the first word."
-  (= 1 (nvim.fn.executable (a.first (str.split cmd "%s+")))))
+  (= 1 (vim.fn.executable (a.first (str.split cmd "%s+")))))
 
 (fn running? [proc]
   (if proc
@@ -29,7 +31,7 @@
     (when (running? proc)
       (a.assoc proc :running? false)
       (tset state.jobs proc.job-id nil)
-      (pcall nvim.buf_delete proc.buf {:force true})
+      (pcall vim.api.nvim_buf_delete proc.buf {:force true})
       (let [on-exit (a.get-in proc [:opts :on-exit])]
         (when on-exit
           (on-exit proc))))))
@@ -49,32 +51,32 @@
      "endfunction"]))
 
 (fn execute [cmd opts]
-  (let [win (nvim.tabpage_get_win 0)
-        original-buf (nvim.win_get_buf win)
-        term-buf (nvim.create_buf (not (?. opts :hidden?)) true)
+  (let [win (vim.api.nvim_tabpage_get_win 0)
+        original-buf (vim.api.nvim_win_get_buf win)
+        term-buf (vim.api.nvim_create_buf (not (?. opts :hidden?)) true)
         proc {:cmd cmd :buf term-buf
               :running? true
               :opts opts}
         job-id (do
-                 (nvim.win_set_buf win term-buf)
-                 (nvim.fn.termopen cmd {:on_exit "ConjureProcessOnExit"}))]
+                 (vim.api.nvim_win_set_buf win term-buf)
+                 (vim.fn.termopen cmd {:on_exit "ConjureProcessOnExit"}))]
     (match job-id
       0 (error "invalid arguments or job table full")
       -1 (error (.. "'" cmd "' is not executable")))
-    (nvim.win_set_buf win original-buf)
+    (vim.api.nvim_win_set_buf win original-buf)
     (tset state.jobs job-id proc)
     (a.assoc proc :job-id job-id)))
 
+
 (fn stop [proc]
   (when (running? proc)
-    (nvim.fn.jobstop proc.job-id)
+    (vim.fn.jobstop proc.job-id)
     (on-exit proc.job-id))
   proc)
 
-{
- : executable?
- : running?
- : on-exit
+{: executable?
  : execute
+ : on-exit
+ : running?
  : stop
- }
+ : version}

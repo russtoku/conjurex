@@ -1,6 +1,6 @@
 (local {: autoload} (require :nfnl.module))
-(local a (autoload :conjure.aniseed.core))
-(local str (autoload :conjure.aniseed.string))
+(local a (autoload :nfnl.core))
+(local str (autoload :nfnl.string))
 
 (fn trailing-newline? [s]
   (string.match s "\r?\n$"))
@@ -65,17 +65,15 @@
   (when s
     (s:gsub "^%l" string.upper)))
 
-{
- : trailing-newline?
- : trim-last-newline
- : left-sample
- : right-sample
- : split-lines
- : prefixed-lines
- : starts-with
+{: chars
  : ends-with
  : first-and-last-chars
+ : left-sample
+ : prefixed-lines
+ : right-sample
+ : split-lines
+ : starts-with
  : strip-ansi-escape-sequences
- : chars
- : upper-first
- }
+ : trailing-newline?
+ : trim-last-newline
+ : upper-first}
