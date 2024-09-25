@@ -36,6 +36,24 @@ printed output. The first thing I want to do is address this. I think that the
 way things are handled are confusing and not what is expected if you type things
 into the Python command line REPL directly.
 
+### How to use this Python client
+
+Have your plugin manager clone this repo and configure your Conjure plugin to
+use `conjurex.client.python.stdio` as the filetype handler for Python files.
+
+Add this to a Fennel configuration file (assumes you are using `nfnl` to
+automatically compile .fnl to .lua):
+
+```
+(tset vim.g :conjure#filetype#python :conjurex.client.python.stdio)
+```
+
+Or in a Lua configuration file:
+
+```lua
+vim.g["conjure#filetype#python"] = "conjurex.client.python.stdio"
+```
+
 ## SQL client
 
 When I wrote the SQL client, I used [PostgresQL](https://www.postgresql.org/)
