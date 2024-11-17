@@ -1,27 +1,24 @@
-import csv
-import datetime
-
-datetime.datetime.now() # datetime.datetime(2024, 9, 22, 11, 22, 47, 121454)
+# Should be able to evaluate all of these.
 
 def add(a, b):
     return a + b
 
-add(4, 29) # 33
 
-4 + 9 # 13
+add(4, 29)
 
-5 + \
-7 + \
-9 # 21
+4 + 9
 
-"hello" # 'hello'
+5 + 7 + 9
 
-print("hello world") # hello world
+"hello"
+
+print("hello world")
 
 a = "foo"
-print(a) # foo
+print(a)
 
 a, b = [1, 2]
+
 
 def print_things_then_return():
     """
@@ -31,103 +28,102 @@ def print_things_then_return():
         print(i)
     return "all done!"
 
-print_things_then_return()
-# 0
-# 1
-# 2
-# 3
-# 'all done!'
 
 def newline_in_function_bug():
-    return "hey" + "\n" + "\tho"
-
-newline_in_function_bug() # 'hey\n\tho'
-
-print(newline_in_function_bug())
-# hey
-# 	ho
-
-def fn4():
-    return 'a\nb\\ncde'
-
-print(fn4())
-# a
-# b\ncde
+    return "hey\n\n" + "\\n" + "\n" + "ho"
 
 
-"\n".join(['a','b', "cde"]) # 'a\nb\ncde'
-# To evaluate the list, use selection and '<localleader>E'.
-# With cursor on opening bracket, can also use '<localleader>E%'.
+newline_in_function_bug()
 
-
-print("\n".join(['a','b', "cde"]))
-# a
-# b
-# cde
-
-
-def fn3():
-    print("\n".join(['a','b', "cde"]))
-
-fn3()
-# a
-# b
-# cde
-
-def fn2():
-    a = 42
-    return f"The answer is a.\nOf course, a is {a}"
-
-print(fn2())
-# The answer is a.
-# Of course, a is 42
-
+print_things_then_return()
 
 for i in range(20):
     print(i)
-# 0
-# 1
-# 2
-# 3
-# 4
-# 5
-# 6
-# 7
-# 8
-# 9
-# 10
-# 11
-# 12
-# 13
-# 14
-# 15
-# 16
-# 17
-# 18
-# 19
+
 
 def fn_with_multiline_str():
     description = """
     This is a super long,
     descriptive, multiline string.
     """
-    print(f'Description: {description}')
+    print(f"Description: {description}")
+
 
 fn_with_multiline_str()
-# Description: 
-#     This is a super long,
-#     descriptive, multiline string.
-#     
 
-def fn5():
-    description = """
-    This is a super long,
-    descriptive, multiline string.
+import csv
+from datetime import datetime
+
+
+# Class definition
+#   - from https://docs.python.org/3/tutorial/classes.html
+class Dog:
+
+    def __init__(self, name):
+        self.name = name
+        self.tricks = []
+
+    def add_trick(self, trick):
+        self.tricks.append(trick)
+
+d = Dog('Fido')
+e = Dog('Buddy')
+d.add_trick('roll_over')
+e.add_trick('play dead')
+d.tricks
+e.tricks
+
+
+# Class definition with decorator
+#   - from https://docs.python.org/3.10/tutorial/classes.html
+from dataclasses import dataclass
+
+@dataclass
+class Employee:
+    name: str
+    dept: str
+    salary: int
+
+john = Employee('john', 'computer lab', 1000)
+john.dept
+john.salary
+
+
+# Function definition with decorator
+#   - https://docs.python.org/3.8/library/functools.html?highlight=decorator#functools.cached_property
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib(n):
+    if n < 2:
+        return n
+    return fib(n-1) + fib(n-2)
+
+[fib(n) for n in range(16)]
+# [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610]
+
+fib.cache_info()
+# CacheInfo(hits=28, misses=16, maxsize=None, currsize=16)
+
+
+# Asyncio samples
+#   - Add '-m asyncio' to the python command to evaluate these.
+
 """
-    print(f'Description: {description}')
+async def slow_fn():
+    return "slow_fn result, this is async!"
 
-fn5()
-# Description: 
-#     This is a super long,
-#     descriptive, multiline string.
 
+await slow_fn()
+
+result = None
+
+
+async def capture():
+    global result
+    result = await slow_fn()
+
+
+await capture()
+result
+"""
