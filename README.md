@@ -71,5 +71,12 @@ objects).
 evaluation*, made a change to the client that takes away the ability use
 meta-commands with `psql`. I need to be able to do this so my first order of
 business it to make it optional. Of course, I think that automatically appending
-the SQL statement terminator should be opt-in not the default.
+the SQL statement terminator should be an opt-in; not the default.
 
+## Using Conjure
+
+One of the nice things about Conjure is that you can use it programmatically. This means
+that you can create a keymap, autocommand, or user command to that helps you in *your* workflow.
+However, that means that you need to think about what REPL you'll need to use to make that happen.
+
+While I generally don't like things to happen automatically, this is one time where that is appropriate.
