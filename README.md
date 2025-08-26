@@ -37,8 +37,7 @@ into the Python command line REPL directly.
 
 ### How to use this Python client
 
-*NOTE: This should work with the **master** branch of Conjure. If not use the
-**main** branch.*
+*NOTE: This should work with the **main** branch of Conjure.*
 
 Have your plugin manager clone this repo and configure your Conjure plugin to
 use `conjurex.client.python.stdio` as the filetype handler for Python files.
@@ -56,27 +55,11 @@ Or in a Lua configuration file:
 vim.g["conjure#filetype#python"] = "conjurex.client.python.stdio"
 ```
 
-## SQL client
-
-When I wrote the SQL client, I used [PostgresQL](https://www.postgresql.org/)
-while developing the client. The
-[psql](https://www.postgresql.org/docs/16/app-psql.html) command line program is
-the REPL that I worked with. It has meta-commands that allow you to interact
-with the `psql` client to get information about tables, indexes, etc. (database
-objects).
-
-[Commit
-9346878](https://github.com/Olical/conjure/commit/934687860a71d1d03e569ce11f880a4d404e69aa),
-*Default the psql command to something generic and append a ; to each
-evaluation*, made a change to the client that takes away the ability use
-meta-commands with `psql`. I need to be able to do this so my first order of
-business it to make it optional. Of course, I think that automatically appending
-the SQL statement terminator should be an opt-in; not the default.
 
 ## Using Conjure
 
 One of the nice things about Conjure is that you can use it programmatically. This means
-that you can create a keymap, autocommand, or user command to that helps you in *your* workflow.
-However, that means that you need to think about what REPL you'll need to use to make that happen.
+that you can create a keymap, autocommand, or user command to help you in *your* workflow.
+Of course, you need to think about what REPL you'll need to use to make that happen. You'll also
+need to configure Conjure so that a REPL is automatically started.
 
-While I generally don't like things to happen automatically, this is one time where that is appropriate.
