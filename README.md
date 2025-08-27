@@ -1,5 +1,4 @@
-# conjurex - Experimental clients for
-[Conjure](https://github.com/Olical/conjure)
+# conjurex - Experimental clients for [Conjure](https://github.com/Olical/conjure)
 
 This repo is for seeing what works for me. It's not part of Conjure so I'm free
 to make things work for my needs without worrying about the main Conjure
