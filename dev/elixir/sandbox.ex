@@ -4,13 +4,13 @@
 #   https://hexdocs.pm/elixir/basic-types.html
 
 1                # integer
-0x1F             # 31
+0x1F             # integer; 31
 1.0              # float
 true             # boolean
 :atom            # atom / symbol
 "elixir"         # string
-[1, 2, 3]        # list
-{1, 2, 3}        # tuple
+[1, 2, 3]        # list; [1, 2, 3]
+{1, 2, 3}        # tuple; {1, 2, 3}
 
 1 + 2            # 3
 5 * 5            # 25
@@ -29,7 +29,7 @@ is_integer(2.0)  # false
 
 #   https://hexdocs.pm/elixir/lists-and-tuples.html
 
-[1, 2, true, 3]
+[1, 2, true, 3]                                 # [1, 2, true, 3]
 length([1, 2, 3])                               # 3
 
 [1, 2, 3] ++ [4, 5, 6]                          # [1, 2, 3, 4, 5, 6]
