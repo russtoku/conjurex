@@ -27,8 +27,6 @@ experiments.
 of Conjure off of [Aniseed](https://github.com/Olical/aniseed) and onto
 [nfnl](https://github.com/Olical/nfnl).
 
-## Clients
-
 ## Ruby client
 
 This is for people using Ruby. It'll likely work with Rails, too (I haven't tried yet).
