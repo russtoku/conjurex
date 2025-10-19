@@ -176,9 +176,9 @@ Greeter.instance_methods()
 
 Greeter.instance_methods(false) # [:say_hi, :say_bye]
 
-greeter.respond_to?("name")
-greeter.respond_to?("say_hi")
-greeter.respond_to?("to_s")
+greeter.respond_to?("name") # false
+greeter.respond_to?("say_hi") # true
+greeter.respond_to?("to_s") # true
 
 #  - Altering Classes—It’s Never Too Late
 class Greeter
