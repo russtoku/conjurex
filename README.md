@@ -8,6 +8,11 @@ It's also an example of how to make your own Conjure client for your favorite pr
 language. After cloning the repo, you can copy another language client like the Ruby
 one and modify it for your programming language.
 
+After generating the tags file (`:helptags doc` in the repo directory), you should be able
+to help using `:he conjurex` to access the help documentation for Conjurex clients.
+
+
+
 ## Goals
 
 - Find out what works for me (the owner of this repo).
@@ -51,7 +56,7 @@ repo).
         ```
 
 - After generating the tags file (`:he helptags`), you should be able to help using `:he
-  conjure-client-ruby-stdio`.
+  conjurex-client-ruby-stdio`.
 
 
 ## Elixir client
@@ -84,10 +89,13 @@ repo).
         ```
 
 - After generating the tags file (`:he helptags`), you should be able to help using `:he
-  conjure-client-elixir-stdio`.
+  conjurex-client-elixir-stdio`.
 
 
 ## Python client
+
+*Stil a work in progress!*
+
 
 The original Python client was created by someone else.
 
