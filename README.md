@@ -9,7 +9,7 @@ language. After cloning the repo, you can copy another language client like the 
 one and modify it for your programming language.
 
 After generating the tags file (`:helptags doc` in the repo directory), you should be able
-to help using `:he conjurex` to access the help documentation for Conjurex clients.
+to use `:he conjurex` to access the help documentation for Conjurex clients.
 
 
 
