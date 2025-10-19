@@ -4,6 +4,10 @@ This repo is for seeing what works for me. It's not part of Conjure so I'm free
 to make things work for my needs without worrying about the main Conjure
 clients.
 
+It's also an example of how to make your own Conjure client for your favorite programming
+language. After cloning the repo, you can copy another language client like the Ruby
+one and modify it for your programming language.
+
 ## Goals
 
 - Find out what works for me (the owner of this repo).
@@ -23,29 +27,30 @@ experiments.
 of Conjure off of [Aniseed](https://github.com/Olical/aniseed) and onto
 [nfnl](https://github.com/Olical/nfnl).
 
-## Python client
+## Clients
 
-The original Python client was created by someone else.
+## Ruby client
 
-I contributed small changes to make evaluating Python *forms* (statements, etc.)
-easier. From the language user's perspective, things should *just work*. A large
-challenge of this comes from Python not being a `Lisp` language.
+This is for people using Ruby. It'll likely work with Rails, too (I haven't tried yet).
 
-Another problem with the Python client is how it deals with the notion of
-`return value` vs `printed output`. I see a disconnect between what you see in
-your buffer and what you see when you type things directly into a REPL. I want
-to close that gap so you don't need to have the HUD (heads-up display) or the
-Conjure log buffer opened.
+If you aren't using Rails 7 or 8, now may be a good time to do so.
 
-### How to use this Python client
+### How to use this Ruby client
 
-- Add it to your plugin manager's configuration and install it.
+- Add it to your plugin manager's configuration and install it (clones this
+repo).
 - Configure your Conjure plugin to:
-    - Use `conjurex.client.python.stdio` as the filetype handler for Python files.
-        ```lua
-        vim.g["conjure#filetype#python"] = "conjurex.client.python.stdio"
-        ```
+    - Add the `ruby` filetype.
 
+    ```lua
+        vim.g["conjure#filetypes"] = { "clojure", "fennel", "hy", "racket", "scheme", "lua", "lisp", "python", "rust", "sql", "javascript", "elixir", "ruby" }
+    ```
+
+    - Use `conjurex.client.ruby.stdio` as the filetype handler for Ruby files.
+
+        ```lua
+        vim.g["conjure#filetype#ruby"] = "conjurex.client.ruby.stdio"
+        ```
 
 ## Elixir client
 
@@ -76,26 +81,26 @@ repo).
         vim.g["conjure#filetype#elixir"] = "conjurex.client.elixir.stdio"
         ```
 
-## Ruby client
+## Python client
 
-This is for people using Ruby. It'll likely work with Rails, too (I haven't tried yet).
+The original Python client was created by someone else.
 
-If you aren't using Rails 7 or 8, now may be a good time to do so.
+I contributed small changes to make evaluating Python *forms* (statements, etc.)
+easier. From the language user's perspective, things should *just work*. A large
+challenge of this comes from Python not being a `Lisp` language.
 
-### How to use this Ruby client
+Another problem with the Python client is how it deals with the notion of
+`return value` vs `printed output`. I see a disconnect between what you see in
+your buffer and what you see when you type things directly into a REPL. I want
+to close that gap so you don't need to have the HUD (heads-up display) or the
+Conjure log buffer opened.
 
-- Add it to your plugin manager's configuration and install it (clones this
-repo).
+### How to use this Python client
+
+- Add it to your plugin manager's configuration and install it.
 - Configure your Conjure plugin to:
-    - Add the `ruby` filetype.
-
-    ```lua
-        vim.g["conjure#filetypes"] = { "clojure", "fennel", "hy", "racket", "scheme", "lua", "lisp", "python", "rust", "sql", "javascript", "elixir", "ruby" }
-    ```
-
-    - Use `conjurex.client.ruby.stdio` as the filetype handler for Ruby files.
-
+    - Use `conjurex.client.python.stdio` as the filetype handler for Python files.
         ```lua
-        vim.g["conjure#filetype#ruby"] = "conjurex.client.ruby.stdio"
+        vim.g["conjure#filetype#python"] = "conjurex.client.python.stdio"
         ```
 
