@@ -50,6 +50,10 @@ repo).
         vim.g["conjure#filetype#ruby"] = "conjurex.client.ruby.stdio"
         ```
 
+- After generating the tags file (`:he helptags`), you should be able to help using `:he
+  conjure-client-ruby-stdio`.
+
+
 ## Elixir client
 
 Brandon Pollack created an initial Elixir client in response to [Issue #635,
@@ -78,6 +82,10 @@ repo).
         ```lua
         vim.g["conjure#filetype#elixir"] = "conjurex.client.elixir.stdio"
         ```
+
+- After generating the tags file (`:he helptags`), you should be able to help using `:he
+  conjure-client-elixir-stdio`.
+
 
 ## Python client
 
