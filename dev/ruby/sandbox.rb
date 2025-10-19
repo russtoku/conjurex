@@ -171,71 +171,10 @@ greeter.say_bye
 greeter.@name
 
 #  - Under the Object’s Skin
-#  Should this be evaluated the same as with "()"?
 Greeter.instance_methods
-# => (error) <internal:kernel>:168:in 'Kernel#loop': (irb):157: syntax error found (SyntaxError)
 Greeter.instance_methods()
 
 Greeter.instance_methods(false) # [:say_hi, :say_bye]
-#
-# [:say_hi,
-#  :say_bye,
-#  :pretty_print_cycle,
-#  :pretty_print_instance_variables,
-#  :pretty_print_inspect,
-#  :pretty_print,
-#  :singleton_class,
-#  :dup,
-#  :itself,
-#  :methods,
-#  :singleton_methods,
-#  :protected_methods,
-#  :private_methods,
-#  :public_methods,
-#  :instance_variables,
-#  :instance_variable_get,
-#  :instance_variable_set,
-#  :instance_variable_defined?,
-#  :remove_instance_variable,
-#  :instance_of?,
-#  :kind_of?,
-#  :is_a?,
-#  :display,
-#  :frozen?,
-#  :class,
-#  :then,
-#  :yield_self,
-#  :tap,
-#  :public_send,
-#  :extend,
-#  :clone,
-#  :<=>,
-#  :===,
-#  :!~,
-#  :nil?,
-#  :method,
-#  :eql?,
-#  :respond_to?,
-#  :public_method,
-#  :singleton_method,
-#  :define_singleton_method,
-#  :pretty_inspect,
-#  :hash,
-#  :freeze,
-#  :inspect,
-#  :object_id,
-#  :send,
-#  :to_s,
-#  :to_enum,
-#  :enum_for,
-#  :equal?,
-#  :!,
-#  :__send__,
-#  :==,
-#  :!=,
-#  :__id__,
-#  :instance_eval,
-#  :instance_exec]
 
 greeter.respond_to?("name")
 greeter.respond_to?("say_hi")

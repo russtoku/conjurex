@@ -1,0 +1,54 @@
+                                                                     *conjurex*
+                    ______              _               ~
+                   / ____/___  ____    (_)_  ____________  __
+                  / /   / __ \/ __ \  / / / / / ___/ _ \ \/ /
+                 / /___/ /_/ / / / / / / /_/ / /  /  __/   /
+                 \____/\____/_/ /_/_/ /\__,_/_/   \___/_/\_\
+                                 /___/                  ~
+
+==============================================================================
+CONTENTS                                                   *conjurex-contents*
+
+    1. Introduction ............................ |conjurex-introduction|
+    2. Clients ...................................... |conjurex-clients|
+
+==============================================================================
+INTRODUCTION                                           *conjurex-introduction*
+
+Conjurex provides experimental or alternate language clients that work with
+the Conjure plugin for Neovim.
+
+These clients support programming languages not currently included and
+supported by Conjure. It also demonstrates a way to provide new or replacement
+clients.
+
+From the |conjure-clients| help documentation:
+
+  You can install more clients through 3rd party plugins or simply write your
+  own within your dot files.
+
+  Language clients are simply Lua modules (which can be compiled from Fennel
+  using nfnl) that have a few essential properties and functions in them.
+
+  The module doesn't have to be within Conjure's source tree, it can be inside
+  a 3rd party plugin repository, you can connect a filetype to it with the
+  `g:conjure#filetype#[filetype]` configuration option.
+
+  When implementing a new language client you'll need to provide the following
+  values and functions at the top level of your module. You can split your
+  client up into separate modules and just build this API into your init
+  module. See `fnl/conjure/client/clojure/nrepl/init.fnl` for an example of
+  this.
+
+
+==============================================================================
+CLIENTS                                                     *conjurex-clients*
+
+These are additional clients for Conjure. You can access their
+documentation below or through the `:help conjurex-client-*` command.
+
+ - |conjurex-client-elixir-stdio|
+ - |conjurex-client-ruby-stdio|
+
+
+vim:tw=78:sw=2:ts=2:ft=help:norl:et:listchars=

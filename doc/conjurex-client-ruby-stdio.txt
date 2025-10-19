@@ -1,14 +1,14 @@
-                                                 *conjure-client-ruby-stdio*
+                                                *conjurex-client-ruby-stdio*
 
 ==============================================================================
-CONTENTS                                *conjure-client-ruby-stdio-contents*
+CONTENTS                               *conjurex-client-ruby-stdio-contents*
 
-    1. Introduction ............ |conjure-client-ruby-stdio-introduction|
-    2. Mappings .................... |conjure-client-ruby-stdio-mappings|
-    3. Configuration .......... |conjure-client-ruby-stdio-configuration|
+    1. Introduction ........... |conjurex-client-ruby-stdio-introduction|
+    2. Mappings ................... |conjurex-client-ruby-stdio-mappings|
+    3. Configuration ......... |conjurex-client-ruby-stdio-configuration|
 
 ==============================================================================
-INTRODUCTION                        *conjure-client-ruby-stdio-introduction*
+INTRODUCTION                       *conjurex-client-ruby-stdio-introduction*
 >
   irb is an interactive tool (Ruby REPL) used to execute Ruby expressions.
 
@@ -26,7 +26,7 @@ you can perform.
  * https://www.ruby-lang.org/en/documentation/
 
 ==============================================================================
-MAPPINGS                                *conjure-client-ruby-stdio-mappings*
+MAPPINGS                               *conjurex-client-ruby-stdio-mappings*
 
 These mappings are the defaults, you can change them as described in
 |conjure-mappings| and |conjure-configuration|.
@@ -42,7 +42,7 @@ options relevant to these mappings.
                          in a cmdline REPL.
 
 ==============================================================================
-CONFIGURATION                      *conjure-client-ruby-stdio-configuration*
+CONFIGURATION                     *conjurex-client-ruby-stdio-configuration*
 
 All configuration can be set as described in |conjure-configuration|.
 

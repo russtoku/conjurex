@@ -1,4 +1,4 @@
--- [nfnl] Compiled from fnl/tests/remote/stdio_spec.fnl by https://github.com/Olical/nfnl, do not edit.
+-- [nfnl] fnl/tests/remote/stdio_spec.fnl
 local _local_1_ = require("plenary.busted")
 local describe = _local_1_["describe"]
 local it = _local_1_["it"]
@@ -25,4 +25,4 @@ local function _2_()
   end
   return describe("parse-cmd", _3_)
 end
-return describe("conjure.remote.stdio", _2_)
+return describe("conjurex.remote.stdio", _2_)

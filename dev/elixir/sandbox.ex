@@ -84,7 +84,7 @@ cond do
     "This is never true"
   2 * 2 == 3 ->
     "Nor this"
-  true -> 
+  true ->
     "This is always true (equivalent to else)"
 end                                             # "This is always true (equivalent to else)"
 

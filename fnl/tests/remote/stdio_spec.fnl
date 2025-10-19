@@ -2,7 +2,7 @@
 (local assert (require :luassert.assert))
 (local stdio (require :conjurex.remote.stdio))
 
-(describe "conjure.remote.stdio"
+(describe "conjurex.remote.stdio"
   (fn []
     (describe "parse-cmd"
       (fn []

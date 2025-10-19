@@ -1,7 +1,7 @@
 (local {: autoload : define} (require :conjure.nfnl.module))
 (local a (autoload :nfnl.core))
 (local b64 (autoload :conjure.remote.transport.base64))
-(local client (autoload :conjurex.client))
+(local client (autoload :conjure.client))
 (local config (autoload :conjure.config))
 (local log (autoload :conjurex.log))
 (local mapping (autoload :conjure.mapping))

@@ -1,14 +1,14 @@
-                                                 *conjure-client-elixir-stdio*
+                                                *conjurex-client-elixir-stdio*
 
 ==============================================================================
-CONTENTS                                *conjure-client-elixir-stdio-contents*
+CONTENTS                               *conjurex-client-elixir-stdio-contents*
 
-    1. Introduction ............ |conjure-client-elixir-stdio-introduction|
-    2. Mappings .................... |conjure-client-elixir-stdio-mappings|
-    3. Configuration .......... |conjure-client-elixir-stdio-configuration|
+    1. Introduction ........... |conjurex-client-elixir-stdio-introduction|
+    2. Mappings ................... |conjurex-client-elixir-stdio-mappings|
+    3. Configuration ......... |conjurex-client-elixir-stdio-configuration|
 
 ==============================================================================
-INTRODUCTION                        *conjure-client-elixir-stdio-introduction*
+INTRODUCTION                       *conjurex-client-elixir-stdio-introduction*
 >
   iex is an interactive tool (Elixir REPL) used to execute Elixir expressions.
 
@@ -26,7 +26,7 @@ you can perform.
  * https://hexdocs.pm/elixir/introduction.html
 
 ==============================================================================
-MAPPINGS                                *conjure-client-elixir-stdio-mappings*
+MAPPINGS                               *conjurex-client-elixir-stdio-mappings*
 
 These mappings are the defaults, you can change them as described in
 |conjure-mappings| and |conjure-configuration|.
@@ -42,7 +42,7 @@ options relevant to these mappings.
                          in a cmdline REPL.
 
 ==============================================================================
-CONFIGURATION                      *conjure-client-elixir-stdio-configuration*
+CONFIGURATION                     *conjurex-client-elixir-stdio-configuration*
 
 All configuration can be set as described in |conjure-configuration|.
 

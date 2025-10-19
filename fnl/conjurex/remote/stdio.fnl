@@ -1,39 +1,41 @@
-(local {: autoload} (require :nfnl.module))
-(local a (autoload :nfnl.core))
-(local client (autoload :conjurex.client))
+(local {: autoload : define} (require :nfnl.module))
+(local core (autoload :nfnl.core))
+(local client (autoload :conjure.client))
 (local log (autoload :conjurex.log))
 (local str (autoload :nfnl.string))
 (local uv vim.loop)
 
-(local version "conjurex.remote.stdio")
+(local M (define :conjurex.remote.stdio))
+
+(set M.version "conjurex.remote.stdio")
 
 (fn parse-prompt [s pat]
   (if (s:find pat)
     (values true (s:gsub pat ""))
     (values false s)))
 
-(fn parse-cmd [x]
+(fn M.parse-cmd [x]
   "Returns cmd and args if x is a table. Else if x is a string recursively call
   parse-cmd after splitting x into words."
   (if
-    (a.table? x)
-    {:cmd (a.first x)
-     :args (a.rest x)}
+    (core.table? x)
+    {:cmd (core.first x)
+     :args (core.rest x)}
 
-    (a.string? x)
-    (parse-cmd (str.split x "%s"))))
+    (core.string? x)
+    (M.parse-cmd (str.split x "%s"))))
 
 (fn extend-env [vars]
   "Return a list of k=v environment variables with vars table's entries added."
-  (->> (a.merge
+  (->> (core.merge
          (vim.fn.environ)
          vars)
-       (a.kv-pairs)
-       (a.map
+       (core.kv-pairs)
+       (core.map
          (fn [[k v]]
            (.. k "=" v)))))
 
-(fn start [opts]
+(fn M.start [opts]
   "Starts an external REPL and gives you hooks to send code to it and read
   responses back out. Tying an input to a result is near enough impossible
   through this stdio medium, so it's a best effort.
@@ -48,7 +50,7 @@
                           arrives before the previous command's output on stdout.
   * opts.on-stray-output: Called with stray output that don't match up to a callback.
   * opts.on-exit: Called on exit with the code and signal."
-  (log.dbg version ": start: opts>" (a.pr-str opts) "<")
+  (log.dbg M.version ": M.start: opts>" (core.pr-str opts) "<")
   (let [stdin (uv.new_pipe false)
         stdout (uv.new_pipe false)
         stderr (uv.new_pipe false)]
@@ -57,7 +59,7 @@
                :current nil})
 
     (fn destroy []
-      (log.dbg version ": start: destroy")
+      (log.dbg M.version ": M.start: destroy")
       ;; https://teukka.tech/vimloop.html
       (pcall #(stdout:read_stop))
       (pcall #(stderr:read_stop))
@@ -67,42 +69,42 @@
       (when repl.handle
         (pcall #(uv.process_kill repl.handle uv.constants.SIGINT))
         (pcall #(repl.handle:close))
-        (log.dbg version ": destroy: sent SIGINT to handle>" (a.pr-str repl.handle) "<"))
+        (log.dbg M.version ": destroy: sent SIGINT to handle>" (core.pr-str repl.handle) "<"))
       nil)
 
     (fn on-exit [code signal]
-      (log.dbg version ": on-exit: code>" (a.pr-str code) "<\nsignal>" (a.pr-str signal) "<")
+      (log.dbg M.version ": on-exit: code>" (core.pr-str code) "<\nsignal>" (core.pr-str signal) "<")
       (destroy)
       (client.schedule opts.on-exit code signal))
 
     (fn next-in-queue []
       "Remove the head of repl.queue and send it to the REPL."
-      (log.dbg version ": next-in-queue: repl.queue>" (a.pr-str repl.queue) "<")
-      (let [next-msg (a.first repl.queue)]
+      (log.dbg M.version ": next-in-queue: repl.queue>" (core.pr-str repl.queue) "<")
+      (let [next-msg (core.first repl.queue)]
         (when (and next-msg (not repl.current))
           (table.remove repl.queue 1)
-          (a.assoc repl :current next-msg)
-          (log.dbg version ": send>" (a.pr-str next-msg.code) "<")
+          (core.assoc repl :current next-msg)
+          (log.dbg M.version ": send>" (core.pr-str next-msg.code) "<")
           (stdin:write next-msg.code))))
 
     (fn on-message [source err chunk]
-      (log.dbg version ": receive from>" (a.pr-str source) "<\nerr>" err "<\nchunk>" (a.pr-str chunk) "<")
+      (log.dbg M.version ": receive from>" (core.pr-str source) "<\nerr>" err "<\nchunk>" (core.pr-str chunk) "<")
       (if err
         (do
           (opts.on-error err)
           (destroy))
         (when chunk
           (let [(done? result) (parse-prompt chunk opts.prompt-pattern)
-                cb (a.get-in repl [:current :cb] opts.on-stray-output)] ; What is cb? Where set?
+                cb (core.get-in repl [:current :cb] opts.on-stray-output)] ; What is cb? Where set?
             (when cb
-              (log.dbg version ": received from " source "\nerr>" err "<\nchunk>" (a.pr-str chunk) "<")
-              (log.dbg version ":   err>" err "<")
-              (log.dbg version ":   chunk>" (a.pr-str chunk) "<")
+              (log.dbg M.version ": received from " source "\nerr>" err "<\nchunk>" (core.pr-str chunk) "<")
+              (log.dbg M.version ":   err>" err "<")
+              (log.dbg M.version ":   chunk>" (core.pr-str chunk) "<")
               (pcall
                 #(cb {source result
                       :done? done?})))
             (when done?
-              (a.assoc repl :current nil)
+              (core.assoc repl :current nil)
               (next-in-queue))))))
 
     (fn on-stdout [err chunk]
@@ -113,11 +115,13 @@
         (vim.defer_fn #(on-message :err err chunk) opts.delay-stderr-ms)
         (on-message :err err chunk)))
 
+    ; The code and cb are bundled before being put into a run queue.
+    ; Then the next item in the run queue is executed.
     (fn send [code cb opts]
       (table.insert
         repl.queue
         {:code code
-         :cb (if (a.get opts :batch?)
+         :cb (if (core.get opts :batch?)
                (let [msgs []]
                  (fn [msg]
                    (table.insert msgs msg)
@@ -131,12 +135,12 @@
       (uv.process_kill repl.handle signal)
       nil)
 
-    (let [{: cmd : args} (parse-cmd opts.cmd)
+    (let [{: cmd : args} (M.parse-cmd opts.cmd)
           (handle pid-or-err)
           (uv.spawn cmd {:stdio [stdin stdout stderr]
                          :args args
                          :env (extend-env
-                                (a.merge!
+                                (core.merge!
                                   ;; Trying to disable custom readline config.
                                   ;; Doesn't work in practice but is probably close?
                                   ;; If you know how, please open a PR!
@@ -149,7 +153,7 @@
           (stdout:read_start (client.schedule-wrap on-stdout))
           (stderr:read_start (client.schedule-wrap on-stderr))
           (client.schedule #(opts.on-success))
-          (a.merge!
+          (core.merge!
             repl
             {:handle handle
              :pid pid-or-err
@@ -161,4 +165,4 @@
           (client.schedule #(opts.on-error pid-or-err))
           (destroy))))))
 
-{: parse-cmd : start : version}
+M

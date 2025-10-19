@@ -4,7 +4,7 @@
 (local config (autoload :conjure.config))
 (local log (autoload :conjure.log))
 (local mapping (autoload :conjure.mapping))
-(local stdio (autoload :conjure.remote.stdio))
+(local stdio (autoload :conjurex.remote.stdio))
 (local str (autoload :conjure.nfnl.string))
 
 ;;------------------------------------------------------------
