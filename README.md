@@ -76,3 +76,26 @@ repo).
         vim.g["conjure#filetype#elixir"] = "conjurex.client.elixir.stdio"
         ```
 
+## Ruby client
+
+This is for people using Ruby. It'll likely work with Rails, too (I haven't tried yet).
+
+If you aren't using Rails 7 or 8, now may be a good time to do so.
+
+### How to use this Ruby client
+
+- Add it to your plugin manager's configuration and install it (clones this
+repo).
+- Configure your Conjure plugin to:
+    - Add the `ruby` filetype.
+
+    ```lua
+        vim.g["conjure#filetypes"] = { "clojure", "fennel", "hy", "racket", "scheme", "lua", "lisp", "python", "rust", "sql", "javascript", "elixir", "ruby" }
+    ```
+
+    - Use `conjurex.client.ruby.stdio` as the filetype handler for Ruby files.
+
+        ```lua
+        vim.g["conjure#filetype#ruby"] = "conjurex.client.ruby.stdio"
+        ```
+
