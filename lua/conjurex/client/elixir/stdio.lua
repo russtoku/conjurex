@@ -2,7 +2,7 @@
 local _local_1_ = require("conjure.nfnl.module")
 local autoload = _local_1_["autoload"]
 local define = _local_1_["define"]
-local a = autoload("conjure.nfnl.core")
+local core = autoload("conjure.nfnl.core")
 local client = autoload("conjure.client")
 local config = autoload("conjure.config")
 local log = autoload("conjure.log")
@@ -24,8 +24,8 @@ state = client["new-state"](_3_)
 M["buf-suffix"] = ".ex"
 M["comment-prefix"] = "# "
 M["form-node?"] = function(node)
-  log.dbg(("M.form-node?: node:type = " .. a["pr-str"](node:type())))
-  log.dbg(("M.form-node?: node:parent = " .. a["pr-str"](node:parent())))
+  log.dbg(("M.form-node?: node:type = " .. core["pr-str"](node:type())))
+  log.dbg(("M.form-node?: node:parent = " .. core["pr-str"](node:parent())))
   local parent = node:parent()
   if ("call" == node:type()) then
     return true
@@ -76,22 +76,22 @@ local function display_result(msg)
   local function _6_(_241)
     return (M["comment-prefix"] .. _241)
   end
-  return log.append(a.map(_6_, msg))
+  return log.append(core.map(_6_, msg))
 end
 local function remove_prompts(msgs)
   local function _7_(_241)
     return string.gsub(_241, "%.+%(%d+%)> +", "")
   end
   local function _8_(_241)
-    return a["nil?"](string.find(_241, "iex:%d+"))
+    return core["nil?"](string.find(_241, "iex:%d+"))
   end
   local function _9_(_241)
     return not ("" == _241)
   end
-  return a.map(_7_, a.filter(_8_, a.filter(_9_, str.split(msgs, "\n"))))
+  return core.map(_7_, core.filter(_8_, core.filter(_9_, str.split(msgs, "\n"))))
 end
 M.unbatch = function(msgs)
-  log.dbg(("M.unbatch: msgs=" .. a["pr-str"](msgs)))
+  log.dbg(("M.unbatch: msgs=" .. core["pr-str"](msgs)))
   local function _10_(_241)
     return str.join("\n", _241)
   end
@@ -99,26 +99,26 @@ M.unbatch = function(msgs)
     return remove_prompts(_241)
   end
   local function _12_(_241)
-    return (a.get(_241, "out") or a.get(_241, "err"))
+    return (core.get(_241, "out") or core.get(_241, "err"))
   end
-  return {out = str.join(a.map(_10_, a.map(_11_, a.map(_12_, msgs))))}
+  return {out = str.join(core.map(_10_, core.map(_11_, core.map(_12_, msgs))))}
 end
 M["format-msg"] = function(msg)
-  log.dbg(("M.format-msg: msg=" .. a["pr-str"](msg)))
+  log.dbg(("M.format-msg: msg=" .. core["pr-str"](msg)))
   local function _13_(line)
     return line
   end
   local function _14_(_241)
     return not str["blank?"](_241)
   end
-  return a.map(_13_, a.filter(_14_, str.split(a.get(msg, "out"), "\n")))
+  return core.map(_13_, core.filter(_14_, str.split(core.get(msg, "out"), "\n")))
 end
 M["eval-str"] = function(opts)
-  log.dbg(("M.eval-str: opts=" .. a["pr-str"](opts)))
+  log.dbg(("M.eval-str: opts=" .. core["pr-str"](opts)))
   local function _15_(repl)
     local function _16_(msgs)
       local msgs0 = M["format-msg"](M.unbatch(msgs))
-      log.dbg(("M.eval-str: in cb: msgs=" .. a["pr-str"](msgs0)))
+      log.dbg(("M.eval-str: in cb: msgs=" .. core["pr-str"](msgs0)))
       opts["on-result"](str.join("\n", msgs0))
       return log.append(msgs0)
     end
@@ -127,7 +127,7 @@ M["eval-str"] = function(opts)
   return with_repl_or_warn(_15_)
 end
 M["eval-file"] = function(opts)
-  return M["eval-str"](a.assoc(opts, "code", a.slurp(opts["file-path"])))
+  return M["eval-str"](core.assoc(opts, "code", core.slurp(opts["file-path"])))
 end
 local function display_repl_status(status)
   return log.append({(M["comment-prefix"] .. cfg({"command"}) .. " (" .. (status or "no status") .. ")")}, {["break?"] = true})
@@ -137,7 +137,7 @@ M.stop = function()
   if repl then
     repl.destroy()
     display_repl_status("stopped")
-    return a.assoc(state(), "repl", nil)
+    return core.assoc(state(), "repl", nil)
   else
     return nil
   end
@@ -162,11 +162,11 @@ M.start = function()
     end
     local function _22_(code, signal)
       if (("number" == type(code)) and (code > 0)) then
-        log.append({(M["comment-prefix"] .. "process exited with code " .. a["pr-str"](code))})
+        log.append({(M["comment-prefix"] .. "process exited with code " .. core["pr-str"](code))})
       else
       end
       if (("number" == type(signal)) and (signal > 0)) then
-        log.append({(M["comment-prefix"] .. "process exited with signal " .. a["pr-str"](signal))})
+        log.append({(M["comment-prefix"] .. "process exited with signal " .. core["pr-str"](signal))})
       else
       end
       return M.stop()
@@ -174,7 +174,7 @@ M.start = function()
     local function _25_(msg)
       return log.append(M["format-msg"](msg))
     end
-    return a.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt_pattern"}), cmd = cfg({"command"}), ["on-success"] = _18_, ["on-error"] = _21_, ["on-exit"] = _22_, ["on-stray-output"] = _25_}))
+    return core.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt_pattern"}), cmd = cfg({"command"}), ["on-success"] = _18_, ["on-error"] = _21_, ["on-exit"] = _22_, ["on-stray-output"] = _25_}))
   end
 end
 M["on-exit"] = function()

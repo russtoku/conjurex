@@ -1,5 +1,5 @@
 (local {: autoload : define} (require :conjure.nfnl.module))
-(local a (autoload :conjure.nfnl.core))
+(local core (autoload :conjure.nfnl.core))
 (local client (autoload :conjure.client))
 (local config (autoload :conjure.config))
 (local log (autoload :conjure.log))
@@ -18,7 +18,7 @@
 ;; Also, it is in a separate repo from Conjure as an example
 ;; of creating clients that are not part of the Conjure codebase. This should allow people
 ;; to contribute to the Conjure ecosystem without having to add to the main codebase.
-;; 
+;;
 ;;============================================================
 
 ;;------------------------------------------------------------
@@ -27,16 +27,16 @@
 ;;
 ;;  $ iex
 ;;  Erlang/OTP 28 [erts-16.0] [source] [64-bit] [smp:8:8] [ds:8:8:10] [async-threads:1] [jit] [dtrace]
-;;  
+;;
 ;;  Interactive Elixir (1.18.4) - press Ctrl+C to exit (type h() ENTER for help)
 ;;  iex(1)> (1)
 ;;  1
 ;;  iex(2)> add(1, 2)
 ;;  error: undefined function add/2 (there is no such import)
 ;;  └─ iex:2
-;;  
+;;
 ;;  ** (CompileError) cannot compile code (errors have been logged)
-;;  
+;;
 ;;  iex(2)> 1+ 2
 ;;  3
 ;;  iex(3)>
@@ -50,7 +50,7 @@
    {:elixir
     {:stdio
      {:command "iex"
-      :mix_command "iex -S mix"
+      :mix_command "iex -S mix" ; not implemented yet. See TODO below.
       :prompt_pattern "iex%(%d+%)> "}}}})
 
 (when (config.get-in [:mapping :enable_defaults])
@@ -69,8 +69,8 @@
 
 ;; This should allow using <localleader>ee on most expressions or statements.
 (fn M.form-node? [node]
-  (log.dbg (.. "M.form-node?: node:type = " (a.pr-str (node:type))))
-  (log.dbg (.. "M.form-node?: node:parent = " (a.pr-str (node:parent))))
+  (log.dbg (.. "M.form-node?: node:type = " (core.pr-str (node:type))))
+  (log.dbg (.. "M.form-node?: node:parent = " (core.pr-str (node:parent))))
   (let [parent (node:parent)]
     (if (= "call" (node:type)) true
         (= "binary_operator" (node:type)) true
@@ -101,7 +101,7 @@
 
 (fn display-result [msg]
   (->> msg
-       (a.map #(.. M.comment-prefix $1))
+       (core.map #(.. M.comment-prefix $1))
        log.append))
 
 ;; A function to clean the lines of an output message. It removes "iex:15" and
@@ -109,34 +109,34 @@
 (fn remove_prompts [msgs]
   (->>
     (str.split msgs "\n")
-    (a.filter #(not (= "" $1)))
-    ; (a.filter #(a.nil? (string.find $1 "iex:%d+:")))
-    (a.filter #(a.nil? (string.find $1 "iex:%d+")))
-    (a.map #(string.gsub $1 "%.+%(%d+%)> +" ""))))
+    (core.filter #(not (= "" $1)))
+    ; (core.filter #(core.nil? (string.find $1 "iex:%d+:")))
+    (core.filter #(core.nil? (string.find $1 "iex:%d+")))
+    (core.map #(string.gsub $1 "%.+%(%d+%)> +" ""))))
 
 ;; # debug: M.unbatch: msgs=[{:done? true↵  :out "** (BadBooleanError) expected a boolean on left-side of \"and\", got: 1↵    iex:15: (file)↵"}]
 (fn M.unbatch [msgs]
-  (log.dbg (.. "M.unbatch: msgs=" (a.pr-str msgs)))
+  (log.dbg (.. "M.unbatch: msgs=" (core.pr-str msgs)))
   ;; Pass array to a series of functions that operate on the array.
   ;; Map a function to split each element of the array
   {:out (->> msgs
-             (a.map #(or (a.get $1 :out) (a.get $1 :err)))
-             ; (a.map #(remove_secondary_prompt $1))
-             (a.map #(remove_prompts $1))
-             (a.map #(str.join "\n" $1))
+             (core.map #(or (core.get $1 :out) (core.get $1 :err)))
+             ; (core.map #(remove_secondary_prompt $1))
+             (core.map #(remove_prompts $1))
+             (core.map #(str.join "\n" $1))
              (str.join))})
 
 ;; # debug: format-msg: msg={:out "3↵"}
 (fn M.format-msg [msg]
-  (log.dbg (.. "M.format-msg: msg=" (a.pr-str msg)))
+  (log.dbg (.. "M.format-msg: msg=" (core.pr-str msg)))
   (->> (-> msg
-           (a.get :out)
+           (core.get :out)
            (str.split "\n"))
-       (a.filter #(not (str.blank? $1)))
-       (a.map (fn [line] line))))
+       (core.filter #(not (str.blank? $1)))
+       (core.map (fn [line] line))))
 
 (fn M.eval-str [opts]
-  (log.dbg (.. "M.eval-str: opts=" (a.pr-str opts)))
+  (log.dbg (.. "M.eval-str: opts=" (core.pr-str opts)))
   (with-repl-or-warn
     (fn [repl]
       (repl.send
@@ -144,14 +144,14 @@
         (prep-code opts.code )
         (fn [msgs]
           (let [msgs (-> msgs M.unbatch M.format-msg)]
-            (log.dbg (.. "M.eval-str: in cb: msgs=" (a.pr-str msgs)))
-            ; (opts.on-result (a.last msgs))
+            (log.dbg (.. "M.eval-str: in cb: msgs=" (core.pr-str msgs)))
+            ; (opts.on-result (core.last msgs))
             (opts.on-result (str.join "\n" msgs))
             (log.append msgs)))
         {:batch? true}))))
 
 (fn M.eval-file [opts]
-  (M.eval-str (a.assoc opts :code (a.slurp opts.file-path))))
+  (M.eval-str (core.assoc opts :code (core.slurp opts.file-path))))
 
 (fn display-repl-status [status]
   (log.append
@@ -165,7 +165,7 @@
     (when repl
       (repl.destroy)
       (display-repl-status :stopped)
-      (a.assoc (state) :repl nil))))
+      (core.assoc (state) :repl nil))))
 
 (fn M.start []
   (log.dbg (.. "start: prompt_pattern=" (cfg [:prompt_pattern])
@@ -176,10 +176,11 @@
                      (config.get-in [:mapping :prefix])
                      (cfg [:mapping :stop]))]
                 {:break? true})
-    (a.assoc
+    (core.assoc
       (state) :repl
       (stdio.start
         {:prompt-pattern (cfg [:prompt_pattern])
+         ; TODO: Handle Mix projects, too. See https://github.com/brandonpollack23/conjure/blob/38188097dbca91d8f8a96bda24e259a1ee2b44f2/fnl/conjure/client/elixir/stdio.fnl#L148
          :cmd (cfg [:command])
 
          :on-success
@@ -201,9 +202,9 @@
          :on-exit
          (fn [code signal]
            (when (and (= :number (type code)) (> code 0))
-             (log.append [(.. M.comment-prefix "process exited with code " (a.pr-str code))]))
+             (log.append [(.. M.comment-prefix "process exited with code " (core.pr-str code))]))
            (when (and (= :number (type signal)) (> signal 0))
-             (log.append [(.. M.comment-prefix "process exited with signal " (a.pr-str signal))]))
+             (log.append [(.. M.comment-prefix "process exited with signal " (core.pr-str signal))]))
            (M.stop))
 
          :on-stray-output
