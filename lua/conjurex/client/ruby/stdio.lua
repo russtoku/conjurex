@@ -1,13 +1,13 @@
 -- [nfnl] fnl/conjurex/client/ruby/stdio.fnl
 local _local_1_ = require("conjure.nfnl.module")
-local autoload = _local_1_["autoload"]
-local define = _local_1_["define"]
+local autoload = _local_1_.autoload
+local define = _local_1_.define
 local core = autoload("conjure.nfnl.core")
 local client = autoload("conjure.client")
 local config = autoload("conjure.config")
 local log = autoload("conjure.log")
 local mapping = autoload("conjure.mapping")
-local stdio = autoload("conjurex.remote.stdio")
+local stdio = autoload("conjure.remote.stdio")
 local str = autoload("conjure.nfnl.string")
 local M = define("conjurex.client.ruby.stdio")
 M["buf-suffix"] = ".rb"
@@ -27,19 +27,17 @@ M["form-node?"] = function(node)
   log.dbg(("M.form-node?: node:type = " .. core["pr-str"](node:type())))
   log.dbg(("M.form-node?: node:parent = " .. core["pr-str"](node:parent())))
   local parent = node:parent()
-  if ("call" == node:type()) then
-    return true
-  elseif (("binary" == node:type()) and not ("binary" == parent:type())) then
+  if (("binary" == node:type()) and not ("binary" == parent:type())) then
     return true
   elseif ("binary" == node:type()) then
     return true
-  elseif ("assignment" == node:type()) then
+  elseif (("left" == node:type()) and ("assignment" == parent:type())) then
+    return true
+  elseif (("call" == node:type()) and not ("assignment" == parent:type())) then
     return true
   elseif ("arguments" == node:type()) then
     return true
   elseif ("class" == node:type()) then
-    return true
-  elseif ("identifier" == node:type()) then
     return true
   elseif ("method" == node:type()) then
     return true
@@ -54,6 +52,10 @@ M["form-node?"] = function(node)
   elseif ("float" == node:type()) then
     return true
   elseif ("string" == node:type()) then
+    return true
+  elseif ("assignment" == node:type()) then
+    return true
+  elseif ("identifier" == node:type()) then
     return true
   else
     return false

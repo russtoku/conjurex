@@ -4,7 +4,7 @@
 (local config (autoload :conjure.config))
 (local log (autoload :conjure.log))
 (local mapping (autoload :conjure.mapping))
-(local stdio (autoload :conjurex.remote.stdio))
+(local stdio (autoload :conjure.remote.stdio))
 (local str (autoload :conjure.nfnl.string))
 
 ;;------------------------------------------------------------
@@ -89,16 +89,18 @@
   (log.dbg (.. "M.form-node?: node:parent = " (core.pr-str (node:parent))))
   (let [parent (node:parent)]
     ; Order of conditions is important. If need to tweak, add an example to sandbox.rb.
-    (if (= "call" (node:type)) true
+    (if
         ; Grab nested binary from where the cursor is in the expression to the left-most
         ; number. See dev/ruby/sandbox.rb.
         (and (= "binary" (node:type))
           (not (= "binary" (parent:type)))) true
         (= "binary" (node:type)) true
-        (= "assignment" (node:type)) true
+        (and (= "left" (node:type))
+             (= "assignment" (parent:type))) true
+        (and (= "call" (node:type))
+          (not (= "assignment" (parent:type)))) true
         (= "arguments" (node:type)) true
         (= "class" (node:type)) true
-        (= "identifier" (node:type)) true
         (= "method" (node:type)) true
         (= "array" (node:type)) true
         (= "hash" (node:type)) true
@@ -106,6 +108,8 @@
         (= "integer" (node:type)) true
         (= "float" (node:type)) true
         (= "string" (node:type)) true
+        (= "assignment" (node:type)) true
+        (= "identifier" (node:type)) true
         false)))
 
 (fn with-repl-or-warn [f opts]

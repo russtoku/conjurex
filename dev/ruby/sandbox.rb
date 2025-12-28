@@ -17,7 +17,7 @@
 
 2 * 7 / 3 + 9 # 13
 
-x = 2 * 7 / 3 + 9 # # (out) x = 2 * 7 / 3 + 9
+x = 2 * 7 / 3 + 9 # (out) x = 2 * 7 / 3 + 9
 puts 2 * 7 / 3 + 9
 
 
@@ -41,15 +41,17 @@ class Numeric
 end # :plus
 
 y = 5.plus 6
+5.plus 6
+5.+ 6
 
 #  form-node? recognizes the arguments of a function.
 6 * 17.2 / 0.2 # 515.9999999999999
 y = 5.plus 6 * 17.2 / 0.2
 # => 520.9999999999999
 
-aNum.plus 3 # 5
 aNum
 # => 2
+aNum.plus 3 # 5
 
 #   - Blocks: a Truly Expressive Feature
 search_engines =
@@ -72,10 +74,11 @@ class MyArray
 end
 
 # Can we tell how many methods are added when we include from mixin?
+Enumerable.methods(false)
+Enumerable.instance_methods(false) # this one reports methods
+
 MyArray.methods(false)
 MyArray.instance_methods(false)
-Enumerable.methods(false)
-Enumerable.instance_methods(false)
 
 # End of From https://www.ruby-lang.org/en/about/
 
@@ -187,35 +190,77 @@ end
 
 greeter = Greeter.new("Andy")
 #  Access attribute
-greeter.respond_to?("name")
+greeter.respond_to?("name") # true
 #  Set attribute
-greeter.respond_to?("name=")
+greeter.respond_to?("name=") # true
 #  Same as when evaluated with "()".
 greeter.say_hi
-#  Is this supposed to update the name attribute?
+#  This should update the name attribute.
 greeter.name="Betty"
 greeter
 greeter.name
 greeter.say_hi
 
 #  - Cycling and Looping—a.k.a. Iteration
-names = ["Albert", "Brenda", "Charles", "Dave", "Engelbert"]
+class MegaGreeter
+  attr_accessor :names
+
+  def initialize(name = "World")
+    @names = names
+  end
+
+  def say_hi
+    if @names.nil?
+      puts "..."
+    elsif @names.respond_to?("each")
+      # @names is a list of some kind, iterate!
+      @names.each do |name|
+        puts "Hello #{name}!"
+      end
+    else
+      puts "Hello #{@names}!"
+    end
+  end
+
+  def say_bye
+    if @names.nil?
+      puts "..."
+    elsif @names.respond_to?("join")
+      puts "Goodby #{@names}.join(", ")}.  Come back soon!"
+    else
+      puts "Goodbye #{@names}. Come back soon!"
+    end
+  end
+end
+
+yack = 7
+mg = MegaGreeter.new
+# Evaluate these with a visual selection:
+mg.say_hi
+# (out) ...
+mg.say_bye
+# (out) ...
+
+# Change the name to an array of names
+mg.names = ["Albert", "Brenda", "Charles", "Dave", "Engelbert"]
+mg.say_hi
+mg.say_bye
 
 #  Should this just print the names; not return them?
+names = ["Tom", "Dick", "Harry", "Megan", "Kate"]
 names.each do |name|
   puts "Hello #{name}!"
-end # ["Albert", "Brenda", "Charles", "Dave", "Engelbert"]
+end # ["Tom", "Dick", "Harry", "Megan", "Kate"]
 
 def say_bye
-  if names.nil?
+  if @names.nil?
     puts "..."
-  elsif names.respond_to?("join")
-    puts "Goodbye #{names.join(", ")}. Come back soon!"
+  elsif @names.respond_to?("join")
+    puts "Goodbye #{@names.join(", ")}. Come back soon!"
   else
-    puts "Goodbye #{names}. Come back soon!"
+    puts "Goodbye #{@names}. Come back soon!"
   end
 end
 
 say_bye
-# => (error) (irb):230:in 'Object#say_bye': undefined local variable or method 'names' for main (NameError)
-
+# (out) ...

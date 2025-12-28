@@ -63,14 +63,16 @@ case {1, 2, 3} do
     "This clause will match and bind x to 2 in this clause"
   _ ->
     "This clause would match any value"
-end                                             # "This clause will match and bind x to 2 in this clause"
+end
+# "This clause will match and bind x to 2 in this clause"
 
 case {1, 2, 3} do
   {1, x, 3} when x > 0 ->
     "Will match"
   _ ->
     "Would match, if guard condition were not satisfied"
-end                                             # "Will match"
+end
+# "Will match"
 
 x = 1                                           # 1
 x = if true do
@@ -87,5 +89,4 @@ cond do
   true ->
     "This is always true (equivalent to else)"
 end                                             # "This is always true (equivalent to else)"
-
 
