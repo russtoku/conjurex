@@ -94,7 +94,7 @@ repo).
 
 ## Python client
 
-*Stil a work in progress!*
+*Broken: still a work in progress!*
 
 
 The original Python client was created by someone else.
