@@ -18,6 +18,7 @@
 2 * 7 / 3 + 9 # 13
 
 x = 2 * 7 / 3 + 9 # (out) x = 2 * 7 / 3 + 9
+# => 13
 puts 2 * 7 / 3 + 9
 
 
@@ -40,9 +41,11 @@ class Numeric
   end
 end # :plus
 
+# 'plus' and '+' are methods of a Numeric.
 y = 5.plus 6
-5.plus 6
-5.+ 6
+# => 11
+5.plus 6 # 11
+5.+ 6 # 11
 
 #  form-node? recognizes the arguments of a function.
 6 * 17.2 / 0.2 # 515.9999999999999
@@ -77,6 +80,7 @@ end
 Enumerable.methods(false)
 Enumerable.instance_methods(false) # this one reports methods
 
+MyArray.methods()
 MyArray.methods(false)
 MyArray.instance_methods(false)
 
@@ -226,7 +230,7 @@ class MegaGreeter
     if @names.nil?
       puts "..."
     elsif @names.respond_to?("join")
-      puts "Goodby #{@names}.join(", ")}.  Come back soon!"
+      puts "Goodbye #{@names}.join(", ")}.  Come back soon!"
     else
       puts "Goodbye #{@names}. Come back soon!"
     end
@@ -248,6 +252,9 @@ mg.say_bye
 
 #  Should this just print the names; not return them?
 names = ["Tom", "Dick", "Harry", "Megan", "Kate"]
+names.join(", ") # "Tom, Dick, Harry, Megan, Kate"
+puts "Goodbye #{@names}.join(", ")}.  Come back soon!"
+
 names.each do |name|
   puts "Hello #{name}!"
 end # ["Tom", "Dick", "Harry", "Megan", "Kate"]
@@ -263,4 +270,4 @@ def say_bye
 end
 
 say_bye
-# (out) ...
+# (out) say_bye

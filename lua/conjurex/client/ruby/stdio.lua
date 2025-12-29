@@ -24,8 +24,9 @@ local function _3_()
 end
 state = client["new-state"](_3_)
 M["form-node?"] = function(node)
-  log.dbg(("M.form-node?: node:type = " .. core["pr-str"](node:type())))
-  log.dbg(("M.form-node?: node:parent = " .. core["pr-str"](node:parent())))
+  log.dbg("--------------------")
+  log.dbg(("ruby.stdio.form-node?: node:type = " .. core.str(node:type())))
+  log.dbg(("ruby.stdio.form-node?: node:parent = " .. core.str(node:parent())))
   local parent = node:parent()
   if (("binary" == node:type()) and not ("binary" == parent:type())) then
     return true
@@ -79,7 +80,7 @@ local function display_result(msg)
   return log.append(core.map(_6_, msg))
 end
 M.unbatch = function(msgs)
-  log.dbg(("M.unbatch: msgs=" .. core["pr-str"](msgs)))
+  log.dbg(("ruby.stdio.unbatch: msgs='" .. core.str(msgs) .. "'"))
   local function _7_(_241)
     return string.gsub(_241, "\n$", "")
   end
@@ -89,7 +90,7 @@ M.unbatch = function(msgs)
   return core.map(_7_, core.map(_8_, msgs))
 end
 local function has_error_3f(line)
-  log.dbg(("has_error? line=" .. core["pr-str"](line)))
+  log.dbg(("ruby.stdio.has_error? line='" .. core.str(line) .. "'"))
   if core["nil?"](line) then
     return false
   else
@@ -97,17 +98,17 @@ local function has_error_3f(line)
   end
 end
 local function extract_error_msg(line)
-  log.dbg(("extract_error_msg: line=" .. core["pr-str"](line)))
+  log.dbg(("ruby.stdio.extract_error_msg: line='" .. core.str(line) .. "'"))
   return core.first(str.split(line, "\n"))
 end
 local function format_line(line)
   local value_prefix_pat = cfg({"value_prefix_pattern"})
   local gsub_value_prefix_pat = ("^.*" .. "=> ")
-  log.dbg(("format-line: line=" .. core["pr-str"](line)))
-  log.dbg(("format-line: value_prefix_pat=" .. core["pr-str"](value_prefix_pat)))
-  log.dbg(("format-line: gsub_value_prefix_pat=" .. core["pr-str"](gsub_value_prefix_pat)))
+  log.dbg(("ruby.stdio.format-line: line='" .. core.str(line) .. "'"))
+  log.dbg(("format-line: value_prefix_pat='" .. core.str(value_prefix_pat) .. "'"))
+  log.dbg(("format-line: gsub_value_prefix_pat='" .. core.str(gsub_value_prefix_pat) .. "'"))
   if string.match(line, value_prefix_pat) then
-    log.dbg(("format-line: line has " .. value_prefix_pat))
+    log.dbg(("format-line: line has '" .. value_prefix_pat .. "'"))
     return string.gsub(line, gsub_value_prefix_pat, "")
   elseif has_error_3f(line) then
     return ("(error) " .. extract_error_msg(line))
@@ -116,7 +117,7 @@ local function format_line(line)
   end
 end
 M["format-msg"] = function(msgs)
-  log.dbg(("M.format-msg: msgs=" .. core["pr-str"](msgs)))
+  log.dbg(("ruby.stdio.format-msg: msgs='" .. core.str(msgs) .. "'"))
   local function _11_(_241)
     return not str["blank?"](_241)
   end
@@ -126,12 +127,12 @@ M["format-msg"] = function(msgs)
   return core.map(format_line, core.filter(_11_, core.filter(_12_, msgs)))
 end
 M["eval-str"] = function(opts)
-  log.dbg(("M.eval-str: opts=" .. core["pr-str"](opts)))
+  log.dbg(("ruby.stdio.eval-str: opts='" .. core.str(opts) .. "'"))
   local function _13_(repl)
-    log.dbg("M.eval-str: in (fn [repl]...")
+    log.dbg(("ruby.stdio.eval-str: sending '" .. core.str(opts.code) .. "'"))
     local function _14_(msgs)
       local msgs0 = M["format-msg"](M.unbatch(msgs))
-      log.dbg(("cb from M.eval-str: msgs=" .. core["pr-str"](msgs0)))
+      log.dbg(("cb from repl.send (ruby.stdio.eval-str): msgs='" .. core.str(msgs0) .. "'"))
       opts["on-result"](core.last(msgs0))
       return log.append(msgs0)
     end
@@ -156,7 +157,7 @@ M.stop = function()
   end
 end
 M.start = function()
-  log.dbg(("start: prompt_pattern=" .. cfg({"prompt_pattern"}) .. "cmd=" .. cfg({"command"})))
+  log.dbg(("ruby.stdio.start: prompt_pattern='" .. cfg({"prompt_pattern"}) .. "', cmd='" .. cfg({"command"}) .. "'"))
   if state("repl") then
     return log.append({(M["comment-prefix"] .. "Can't start, REPL is already running."), (M["comment-prefix"] .. "Stop the REPL with " .. config["get-in"]({"mapping", "prefix"}) .. cfg({"mapping", "stop"}))}, {["break?"] = true})
   else
@@ -175,11 +176,11 @@ M.start = function()
     end
     local function _20_(code, signal)
       if (("number" == type(code)) and (code > 0)) then
-        log.append({(M["comment-prefix"] .. "process exited with code " .. core["pr-str"](code))})
+        log.append({(M["comment-prefix"] .. "process exited with code " .. core.str(code))})
       else
       end
       if (("number" == type(signal)) and (signal > 0)) then
-        log.append({(M["comment-prefix"] .. "process exited with signal " .. core["pr-str"](signal))})
+        log.append({(M["comment-prefix"] .. "process exited with signal " .. core.str(signal))})
       else
       end
       return M.stop()

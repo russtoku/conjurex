@@ -85,8 +85,9 @@
 
 ;; This should allow using <localleader>ee on most expressions or statements.
 (fn M.form-node? [node]
-  (log.dbg (.. "M.form-node?: node:type = " (core.pr-str (node:type))))
-  (log.dbg (.. "M.form-node?: node:parent = " (core.pr-str (node:parent))))
+  (log.dbg "--------------------")
+  (log.dbg (.. "ruby.stdio.form-node?: node:type = " (core.str (node:type))))
+  (log.dbg (.. "ruby.stdio.form-node?: node:parent = " (core.str (node:parent))))
   (let [parent (node:parent)]
     ; Order of conditions is important. If need to tweak, add an example to sandbox.rb.
     (if
@@ -135,7 +136,7 @@
 ; Merge stdout and stderr.
 ; Returns a list.
 (fn M.unbatch [msgs]
-  (log.dbg (.. "M.unbatch: msgs=" (core.pr-str msgs)))
+  (log.dbg (.. "ruby.stdio.unbatch: msgs='" (core.str msgs) "'"))
   (->> msgs
        (core.map #(or (core.get $1 :out) (core.get $1 :err)))
        (core.map #(string.gsub $1 "\n$" "")) ; trim trailing newlines
@@ -143,7 +144,7 @@
 
 ; Is there an irb error in the line?
 (fn has_error? [line]
-  (log.dbg (.. "has_error? line=" (core.pr-str line)))
+  (log.dbg (.. "ruby.stdio.has_error? line='" (core.str line) "'"))
   (if (core.nil? line) false
       (not (core.empty? (string.match line "Error")))))
 
@@ -152,21 +153,21 @@
 ;  => "(irb):4:in '<main>': undefined method 'plus' for an instance of Integer (NoMethodError)"
 ; Assumes caller found "Error" in the line by calling has_error?.
 (fn extract_error_msg [line]
-  (log.dbg (.. "extract_error_msg: line=" (core.pr-str line)))
+  (log.dbg (.. "ruby.stdio.extract_error_msg: line='" (core.str line) "'"))
   (core.first (str.split line "\n")))
 
 (fn format-line [line]
   (let [value_prefix_pat (cfg [:value_prefix_pattern])
         gsub_value_prefix_pat (.. "^.*" "=> ")]
-    (log.dbg (.. "format-line: line=" (core.pr-str line)))
-    (log.dbg (.. "format-line: value_prefix_pat=" (core.pr-str value_prefix_pat)))
-    (log.dbg (.. "format-line: gsub_value_prefix_pat=" (core.pr-str gsub_value_prefix_pat)))
+    (log.dbg (.. "ruby.stdio.format-line: line='" (core.str line) "'"))
+    (log.dbg (.. "format-line: value_prefix_pat='" (core.str value_prefix_pat) "'"))
+    (log.dbg (.. "format-line: gsub_value_prefix_pat='" (core.str gsub_value_prefix_pat) "'"))
     (if
       ; If a line has a :value_prefix_pattern, then strip from beginning of line
       ; to and including the pattern.
       (string.match line value_prefix_pat)
       (do
-        (log.dbg (.. "format-line: line has " value_prefix_pat))
+        (log.dbg (.. "format-line: line has '" value_prefix_pat "'"))
         (string.gsub line gsub_value_prefix_pat "")
         )
 
@@ -183,7 +184,7 @@
 ; FIXME: Assignments should return nil like puts does.
 ;   when last msgs has "(out)" then append nil to msgs.
 (fn M.format-msg [msgs]
-  (log.dbg (.. "M.format-msg: msgs=" (core.pr-str msgs)))
+  (log.dbg (.. "ruby.stdio.format-msg: msgs='" (core.str msgs) "'"))
   (->> msgs
        (core.filter #(string.gsub $1 "\n$" "")) ; trim trailing newlines
        (core.filter #(not (str.blank? $1))) ; omit blank lines
@@ -193,15 +194,16 @@
   )
 
 (fn M.eval-str [opts]
-  (log.dbg (.. "M.eval-str: opts=" (core.pr-str opts)))
+  (log.dbg (.. "ruby.stdio.eval-str: opts='" (core.str opts) "'"))
   (with-repl-or-warn
     (fn [repl]
-      (log.dbg (.. "M.eval-str: in (fn [repl]..."))
+      (log.dbg (.. "ruby.stdio.eval-str: sending '" (core.str opts.code) "'"))
       (repl.send ; [code cb opts]
         (prep-code opts.code )
         (fn [msgs]
           (let [msgs (-> msgs M.unbatch M.format-msg)]
-            (log.dbg (.. "cb from M.eval-str: msgs=" (core.pr-str msgs)))
+            (log.dbg (.. "cb from repl.send (ruby.stdio.eval-str): msgs='"
+                         (core.str msgs) "'"))
             (opts.on-result (core.last msgs)) ; assume last line is return value
             (log.append msgs)))
         {:batch? true}))))
@@ -224,8 +226,8 @@
       (core.assoc (state) :repl nil))))
 
 (fn M.start []
-  (log.dbg (.. "start: prompt_pattern=" (cfg [:prompt_pattern])
-               "cmd=" (cfg [:command])))
+  (log.dbg (.. "ruby.stdio.start: prompt_pattern='" (cfg [:prompt_pattern])
+               "', cmd='" (cfg [:command]) "'"))
   (if (state :repl)
     (log.append [(.. M.comment-prefix "Can't start, REPL is already running.")
                  (.. M.comment-prefix "Stop the REPL with "
@@ -257,9 +259,9 @@
          :on-exit
          (fn [code signal]
            (when (and (= :number (type code)) (> code 0))
-             (log.append [(.. M.comment-prefix "process exited with code " (core.pr-str code))]))
+             (log.append [(.. M.comment-prefix "process exited with code " (core.str code))]))
            (when (and (= :number (type signal)) (> signal 0))
-             (log.append [(.. M.comment-prefix "process exited with signal " (core.pr-str signal))]))
+             (log.append [(.. M.comment-prefix "process exited with signal " (core.str signal))]))
            (M.stop))
 
          :on-stray-output
