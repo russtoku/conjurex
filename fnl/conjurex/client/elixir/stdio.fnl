@@ -6,13 +6,14 @@
 (local mapping (autoload :conjure.mapping))
 (local stdio (autoload :conjure.remote.stdio))
 (local str (autoload :conjure.nfnl.string))
+(local vim _G.vim)
 
 ;;============================================================
 ;;
 ;; Based on https://github.com/brandonpollack23/conjure/tree/add-elixir-client
 ;; for https://github.com/Olical/conjure/issues/635.
 ;;
-;; This differs from Brandon's implementation because it's based on the Scheme client,
+;; This uses a lot from Brandon's implementation but is based on the Scheme client,
 ;; conjure.client.scheme.stdio.
 ;;
 ;; Also, it is in a separate repo from Conjure as an example
@@ -50,7 +51,7 @@
    {:elixir
     {:stdio
      {:command "iex"
-      :mix_command "iex -S mix" ; not implemented yet. See TODO below.
+      :mix_command "iex -S mix"
       :prompt_pattern "iex%(%d+%)> "}}}})
 
 (when (config.get-in [:mapping :enable_defaults])
@@ -69,8 +70,9 @@
 
 ;; This should allow using <localleader>ee on most expressions or statements.
 (fn M.form-node? [node]
-  (log.dbg (.. "M.form-node?: node:type = " (core.pr-str (node:type))))
-  (log.dbg (.. "M.form-node?: node:parent = " (core.pr-str (node:parent))))
+  (log.dbg "--------------------")
+  (log.dbg (.. "client.elixir.stdio.form-node?: node:type = " (core.str (node:type))))
+  (log.dbg (.. "client.elixir.stdio.form-node?: node:parent = " (core.str (node:parent))))
   (let [parent (node:parent)]
     (if (= "call" (node:type)) true
         (= "binary_operator" (node:type)) true
@@ -88,6 +90,8 @@
         (= "nil" (node:type)) true
         (= "integer" (node:type)) true
         (= "charlist" (node:type)) true
+        (= "boolean" (node:type)) true
+        (= "atom" (node:type)) true
         false)))
 
 (fn with-repl-or-warn [f opts]
@@ -104,31 +108,31 @@
        (core.map #(.. M.comment-prefix $1))
        log.append))
 
-;; A function to clean the lines of an output message. It removes "iex:15" and
-;; "..(12)>" parts of the message and any blank lines.
+;; A function to clean the lines of an output message. It removes:
+;;   - any blank lines
+;;   - "iex:15"
+;;   - "..(12)>"
 (fn remove_prompts [msgs]
   (->>
     (str.split msgs "\n")
     (core.filter #(not (= "" $1)))
-    ; (core.filter #(core.nil? (string.find $1 "iex:%d+:")))
     (core.filter #(core.nil? (string.find $1 "iex:%d+")))
     (core.map #(string.gsub $1 "%.+%(%d+%)> +" ""))))
 
 ;; # debug: M.unbatch: msgs=[{:done? true↵  :out "** (BadBooleanError) expected a boolean on left-side of \"and\", got: 1↵    iex:15: (file)↵"}]
 (fn M.unbatch [msgs]
-  (log.dbg (.. "M.unbatch: msgs=" (core.pr-str msgs)))
+  (log.dbg (.. "client.elixir.stdio.unbatch: msgs='" (core.str msgs) "'"))
   ;; Pass array to a series of functions that operate on the array.
   ;; Map a function to split each element of the array
   {:out (->> msgs
              (core.map #(or (core.get $1 :out) (core.get $1 :err)))
-             ; (core.map #(remove_secondary_prompt $1))
              (core.map #(remove_prompts $1))
              (core.map #(str.join "\n" $1))
              (str.join))})
 
 ;; # debug: format-msg: msg={:out "3↵"}
 (fn M.format-msg [msg]
-  (log.dbg (.. "M.format-msg: msg=" (core.pr-str msg)))
+  (log.dbg (.. "client.elixir.stdio.format-msg: msg='" (core.str msg) "'"))
   (->> (-> msg
            (core.get :out)
            (str.split "\n"))
@@ -136,16 +140,14 @@
        (core.map (fn [line] line))))
 
 (fn M.eval-str [opts]
-  (log.dbg (.. "M.eval-str: opts=" (core.pr-str opts)))
+  (log.dbg (.. "client.elixir.stdio.eval-str: opts='" (core.str opts) "'"))
   (with-repl-or-warn
     (fn [repl]
       (repl.send
-        ; (.. opts.code "\n")
         (prep-code opts.code )
         (fn [msgs]
           (let [msgs (-> msgs M.unbatch M.format-msg)]
-            (log.dbg (.. "M.eval-str: in cb: msgs=" (core.pr-str msgs)))
-            ; (opts.on-result (core.last msgs))
+            (log.dbg (.. "client.elixir.stdio.eval-str: in cb: msgs='" (core.str msgs) "'"))
             (opts.on-result (str.join "\n" msgs))
             (log.append msgs)))
         {:batch? true}))))
@@ -167,49 +169,66 @@
       (display-repl-status :stopped)
       (core.assoc (state) :repl nil))))
 
+;; from https://github.com/brandonpollack23/conjure/blob/add-elixir-client/fnl/conjure/client/elixir/stdio.fnl#L123-L130
+(fn M.is-mix-project? []
+  (let [cwd (vim.fn.getcwd)
+        mix_file (io.open (.. cwd "/mix.exs"))]
+    (if mix_file
+      (do
+        (mix_file:close)
+        true)
+      false)))
+
 (fn M.start []
-  (log.dbg (.. "start: prompt_pattern=" (cfg [:prompt_pattern])
-               "cmd=" (cfg [:command])))
   (if (state :repl)
     (log.append [(.. M.comment-prefix "Can't start, REPL is already running.")
                  (.. M.comment-prefix "Stop the REPL with "
                      (config.get-in [:mapping :prefix])
                      (cfg [:mapping :stop]))]
                 {:break? true})
-    (core.assoc
-      (state) :repl
-      (stdio.start
-        {:prompt-pattern (cfg [:prompt_pattern])
-         ; TODO: Handle Mix projects, too. See https://github.com/brandonpollack23/conjure/blob/38188097dbca91d8f8a96bda24e259a1ee2b44f2/fnl/conjure/client/elixir/stdio.fnl#L148
-         :cmd (cfg [:command])
 
-         :on-success
-         (fn []
-           ; (display-repl-status :started))
-           (display-repl-status :started)
-           (with-repl-or-warn
-             (fn [repl]
-               (repl.send
-                 (prep-code ":help")
-                 (fn [msgs]
-                   (display-result (-> msgs M.unbatch M.format-msg)))
-                 {:batch? true}))))
+    ;; Adapted from https://github.com/brandonpollack23/conjure/blob/add-elixir-client/fnl/conjure/client/elixir/stdio.fnl#L148-L154
+    (let [mix-project (M.is-mix-project?)
+          cmd (if mix-project
+                  (cfg [:mix_command])
+                  (cfg [:command]))
+          iex-mode (if mix-project
+                       "mix mode"
+                       "standalone mode")]
 
-         :on-error
-         (fn [err]
-           (display-repl-status err))
+      (log.dbg (.. "client.elixir.stdio.start: prompt_pattern='" (cfg [:prompt_pattern])
+               "', cmd='" cmd "'"))
+      (log.append [(.. M.comment-prefix "Using iex " iex-mode)])
+      (core.assoc
+        (state) :repl
+        (stdio.start
+          {:prompt-pattern (cfg [:prompt_pattern])
+          :cmd cmd
 
-         :on-exit
-         (fn [code signal]
-           (when (and (= :number (type code)) (> code 0))
-             (log.append [(.. M.comment-prefix "process exited with code " (core.pr-str code))]))
-           (when (and (= :number (type signal)) (> signal 0))
-             (log.append [(.. M.comment-prefix "process exited with signal " (core.pr-str signal))]))
-           (M.stop))
+          :on-success
+          (fn []
+            (display-repl-status :started)
+            (with-repl-or-warn
+              (fn [repl]
+                (repl.send
+                  (prep-code ":help")
+                  (fn [msgs]
+                    (display-result (-> msgs M.unbatch M.format-msg)))
+                  {:batch? true}))))
 
-         :on-stray-output
-         (fn [msg]
-           (log.append (M.format-msg msg)))}))))
+          :on-error
+          (fn [err]
+            (display-repl-status err))
+
+          :on-exit
+          (fn [code signal]
+            (log.append [(.. M.comment-prefix "process exited with code: " (core.str code))])
+            (log.append [(.. M.comment-prefix "process exited with signal: " (core.str signal))])
+            (M.stop))
+
+          :on-stray-output
+          (fn [msg]
+            (log.append (M.format-msg msg)))})))))
 
 (fn M.on-exit []
   (M.stop))

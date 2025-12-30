@@ -3,14 +3,16 @@
 # Examples taken from Elixir docs.
 #   https://hexdocs.pm/elixir/basic-types.html
 
-1                # integer
-0x1F             # integer; 31
-1.0              # float
-true             # boolean
-:atom            # atom / symbol
-"elixir"         # string
-[1, 2, 3]        # list; [1, 2, 3]
-{1, 2, 3}        # tuple; {1, 2, 3}
+# Most should evaluate with <localleader>ee (eval current form).
+
+1                # (integer) eval word => 1
+0x1F             # (integer) eval word => 31
+1.0              # (float)   eval word => 1.0
+true             # (boolean) eval current form => true
+:atom            # (atom)    eval word => :atom
+"elixir"         # (string)  eval current form => "elixir"
+[1, 2, 3]        # (list)    eval current form =>  [1, 2, 3]
+{1, 2, 3}        # (tuple)   eval current form => {1, 2, 3}
 
 1 + 2            # 3
 5 * 5            # 25
@@ -64,7 +66,7 @@ case {1, 2, 3} do
   _ ->
     "This clause would match any value"
 end
-# "This clause will match and bind x to 2 in this clause"
+# => "This clause will match and bind x to 2 in this clause"
 
 case {1, 2, 3} do
   {1, x, 3} when x > 0 ->
@@ -72,7 +74,7 @@ case {1, 2, 3} do
   _ ->
     "Would match, if guard condition were not satisfied"
 end
-# "Will match"
+# => "Will match"
 
 x = 1                                           # 1
 x = if true do
@@ -88,5 +90,6 @@ cond do
     "Nor this"
   true ->
     "This is always true (equivalent to else)"
-end                                             # "This is always true (equivalent to else)"
+end
+# => "This is always true (equivalent to else)"
 
