@@ -34,6 +34,8 @@ of Conjure off of [Aniseed](https://github.com/Olical/aniseed) and onto
 
 ## Ruby client
 
+*12/31/2025: This client has been submitted for inclusion to [Conjure](https://github.com/Olical/conjure) with [PR #744](https://github.com/Olical/conjure/pull/744).*
+
 This is for people using Ruby. It'll likely work with Rails, too (I haven't tried yet).
 
 If you aren't using Rails 7 or 8, now may be a good time to do so.
