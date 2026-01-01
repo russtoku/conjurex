@@ -63,6 +63,8 @@ repo).
 
 ## Elixir client
 
+*12/31/2025: This client has been submitted for inclusion to [Conjure](https://github.com/Olical/conjure) with [PR #745](https://github.com/Olical/conjure/pull/745).*
+
 Brandon Pollack created an initial Elixir client in response to [Issue #635,
 Elixir support?](https://github.com/Olical/conjure/issues/635). I created this
 implementation based on his [add-elixir-client
