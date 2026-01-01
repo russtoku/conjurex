@@ -50,8 +50,8 @@
   {:client
    {:elixir
     {:stdio
-     {:command "iex"
-      :mix_command "iex -S mix"
+     {:command "iex --no-color" ; M.start will overwrite this.
+      :standalone_command "iex --no-color"
       :prompt_pattern "iex%(%d+%)> "}}}})
 
 (when (config.get-in [:mapping :enable_defaults])
@@ -119,7 +119,12 @@
     (core.filter #(core.nil? (string.find $1 "iex:%d+")))
     (core.map #(string.gsub $1 "%.+%(%d+%)> +" ""))))
 
+;; IO.puts("Hello world.\n") causes :ok to also be printed.
+;; # debug: remote.stdio.on-message; receive chunk >>"Hello world.↵↵:ok↵iex(18)> "<<
+;; # debug: client.elixir.stdio.unbatch: msgs='[{:done?↵  true↵  :out↵  "Hello world.↵↵:ok↵"}]'
+;;
 ;; # debug: M.unbatch: msgs=[{:done? true↵  :out "** (BadBooleanError) expected a boolean on left-side of \"and\", got: 1↵    iex:15: (file)↵"}]
+;; FIXME: Remove ":ok\n\niex(18)> " from the response.
 (fn M.unbatch [msgs]
   (log.dbg (.. "client.elixir.stdio.unbatch: msgs='" (core.str msgs) "'"))
   ;; Pass array to a series of functions that operate on the array.
@@ -171,6 +176,7 @@
 
 ;; from https://github.com/brandonpollack23/conjure/blob/add-elixir-client/fnl/conjure/client/elixir/stdio.fnl#L123-L130
 (fn M.is-mix-project? []
+  ;; TODO: Isn't there an idomatic Neovim way to check for a mix.exs file?
   (let [cwd (vim.fn.getcwd)
         mix_file (io.open (.. cwd "/mix.exs"))]
     (if mix_file
@@ -189,46 +195,55 @@
 
     ;; Adapted from https://github.com/brandonpollack23/conjure/blob/add-elixir-client/fnl/conjure/client/elixir/stdio.fnl#L148-L154
     (let [mix-project (M.is-mix-project?)
-          cmd (if mix-project
-                  (cfg [:mix_command])
-                  (cfg [:command]))
+          run_cmd (if mix-project
+                       (.. (cfg [:standalone_command]) " -S mix")
+                       (cfg [:standalone_command]))
           iex-mode (if mix-project
                        "mix mode"
                        "standalone mode")]
 
+      ;; Remember the command to run so we do the right thing when telling Neovim to
+      ;; switch current directories.
+      (config.merge
+        {:client
+          {:elixir
+            {:stdio
+              {:command run_cmd}}}}
+        {:overwrite? true})
+
       (log.dbg (.. "client.elixir.stdio.start: prompt_pattern='" (cfg [:prompt_pattern])
-               "', cmd='" cmd "'"))
-      (log.append [(.. M.comment-prefix "Using iex " iex-mode)])
+                   "', command='" (cfg [:command]) "'"))
+      (log.append [(.. M.comment-prefix "Using iex in " iex-mode)])
       (core.assoc
         (state) :repl
         (stdio.start
           {:prompt-pattern (cfg [:prompt_pattern])
-          :cmd cmd
+           :cmd (cfg [:command])
 
-          :on-success
-          (fn []
-            (display-repl-status :started)
-            (with-repl-or-warn
-              (fn [repl]
-                (repl.send
-                  (prep-code ":help")
-                  (fn [msgs]
-                    (display-result (-> msgs M.unbatch M.format-msg)))
-                  {:batch? true}))))
+           :on-success
+           (fn []
+             (display-repl-status :started)
+             (with-repl-or-warn
+               (fn [repl]
+                 (repl.send
+                   (prep-code ":help")
+                   (fn [msgs]
+                     (display-result (-> msgs M.unbatch M.format-msg)))
+                   {:batch? true}))))
 
-          :on-error
-          (fn [err]
-            (display-repl-status err))
+           :on-error
+           (fn [err]
+             (display-repl-status err))
 
-          :on-exit
-          (fn [code signal]
-            (log.append [(.. M.comment-prefix "process exited with code: " (core.str code))])
-            (log.append [(.. M.comment-prefix "process exited with signal: " (core.str signal))])
-            (M.stop))
+           :on-exit
+           (fn [code signal]
+             (log.append [(.. M.comment-prefix "process exited with code: " (core.str code))])
+             (log.append [(.. M.comment-prefix "process exited with signal: " (core.str signal))])
+             (M.stop))
 
-          :on-stray-output
-          (fn [msg]
-            (log.append (M.format-msg msg)))})))))
+           :on-stray-output
+           (fn [msg]
+             (log.append (M.format-msg msg)))})))))
 
 (fn M.on-exit []
   (M.stop))
@@ -236,7 +251,7 @@
 (fn M.interrupt []
   (with-repl-or-warn
     (fn [repl]
-      (log.append [(.. M.comment-prefix " Sending interrupt signal.")] {:break? true})
+      (log.append [(.. M.comment-prefix "Sending interrupt signal.")] {:break? true})
       (repl.send-signal :sigint))))
 
 (fn M.on-load []

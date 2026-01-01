@@ -11,7 +11,7 @@ local stdio = autoload("conjure.remote.stdio")
 local str = autoload("conjure.nfnl.string")
 local vim = _G.vim
 local M = define("conjurex.client.elixir.stdio")
-config.merge({client = {elixir = {stdio = {command = "iex", mix_command = "iex -S mix", prompt_pattern = "iex%(%d+%)> "}}}})
+config.merge({client = {elixir = {stdio = {command = "iex --no-color", standalone_command = "iex --no-color", prompt_pattern = "iex%(%d+%)> "}}}})
 if config["get-in"]({"mapping", "enable_defaults"}) then
   config.merge({client = {elixir = {stdio = {mapping = {start = "cs", stop = "cS", interrupt = "ei"}}}}})
 else
@@ -163,11 +163,11 @@ M.start = function()
     return log.append({(M["comment-prefix"] .. "Can't start, REPL is already running."), (M["comment-prefix"] .. "Stop the REPL with " .. config["get-in"]({"mapping", "prefix"}) .. cfg({"mapping", "stop"}))}, {["break?"] = true})
   else
     local mix_project = M["is-mix-project?"]()
-    local cmd
+    local run_cmd
     if mix_project then
-      cmd = cfg({"mix_command"})
+      run_cmd = (cfg({"standalone_command"}) .. " -S mix")
     else
-      cmd = cfg({"command"})
+      run_cmd = cfg({"standalone_command"})
     end
     local iex_mode
     if mix_project then
@@ -175,8 +175,9 @@ M.start = function()
     else
       iex_mode = "standalone mode"
     end
-    log.dbg(("client.elixir.stdio.start: prompt_pattern='" .. cfg({"prompt_pattern"}) .. "', cmd='" .. cmd .. "'"))
-    log.append({(M["comment-prefix"] .. "Using iex " .. iex_mode)})
+    config.merge({client = {elixir = {stdio = {command = run_cmd}}}}, {["overwrite?"] = true})
+    log.dbg(("client.elixir.stdio.start: prompt_pattern='" .. cfg({"prompt_pattern"}) .. "', command='" .. cfg({"command"}) .. "'"))
+    log.append({(M["comment-prefix"] .. "Using iex in " .. iex_mode)})
     local function _21_()
       display_repl_status("started")
       local function _22_(repl)
@@ -198,7 +199,7 @@ M.start = function()
     local function _26_(msg)
       return log.append(M["format-msg"](msg))
     end
-    return core.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt_pattern"}), cmd = cmd, ["on-success"] = _21_, ["on-error"] = _24_, ["on-exit"] = _25_, ["on-stray-output"] = _26_}))
+    return core.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt_pattern"}), cmd = cfg({"command"}), ["on-success"] = _21_, ["on-error"] = _24_, ["on-exit"] = _25_, ["on-stray-output"] = _26_}))
   end
 end
 M["on-exit"] = function()
@@ -206,7 +207,7 @@ M["on-exit"] = function()
 end
 M.interrupt = function()
   local function _28_(repl)
-    log.append({(M["comment-prefix"] .. " Sending interrupt signal.")}, {["break?"] = true})
+    log.append({(M["comment-prefix"] .. "Sending interrupt signal.")}, {["break?"] = true})
     return repl["send-signal"]("sigint")
   end
   return with_repl_or_warn(_28_)
