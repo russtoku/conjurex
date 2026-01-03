@@ -12,7 +12,6 @@ After generating the tags file (`:helptags doc` in the repo directory), you shou
 to use `:he conjurex` to access the help documentation for Conjurex clients.
 
 
-
 ## Goals
 
 - Find out what works for me (the owner of this repo).
@@ -32,88 +31,36 @@ experiments.
 of Conjure off of [Aniseed](https://github.com/Olical/aniseed) and onto
 [nfnl](https://github.com/Olical/nfnl).
 
-## Ruby client
+## Clients
 
-*12/31/2025: This client has been submitted for inclusion to [Conjure](https://github.com/Olical/conjure) with [PR #744](https://github.com/Olical/conjure/pull/744).*
+### Ruby
 
-This is for people using Ruby. It'll likely work with Rails, too (I haven't tried yet).
-
-If you aren't using Rails 7 or 8, now may be a good time to do so.
-
-### How to use this Ruby client
-
-- Add it to your plugin manager's configuration and install it (clones this
-repo).
-- Configure your Conjure plugin to:
-    - Add the `ruby` filetype.
-
-    ```lua
-        vim.g["conjure#filetypes"] = { "clojure", "fennel", "hy", "racket", "scheme", "lua", "lisp", "python", "rust", "sql", "javascript", "elixir", "ruby" }
-    ```
-
-    - Use `conjurex.client.ruby.stdio` as the filetype handler for Ruby files.
-
-        ```lua
-        vim.g["conjure#filetype#ruby"] = "conjurex.client.ruby.stdio"
-        ```
-
-- After generating the tags file (`:he helptags`), you should be able to help using `:he
-  conjurex-client-ruby-stdio`.
+*01/02/2026: The code for this client was merged into
+[Conjure](https://github.com/Olical/conjure) with [commit 5c69263](https://github.com/Olical/conjure/commit/5c692630257a02696dec59adcef4127f7cd11b62).*
 
 
-## Elixir client
+### Elixir
 
-*12/31/2025: This client has been submitted for inclusion to [Conjure](https://github.com/Olical/conjure) with [PR #745](https://github.com/Olical/conjure/pull/745).*
-
-Brandon Pollack created an initial Elixir client in response to [Issue #635,
-Elixir support?](https://github.com/Olical/conjure/issues/635). I created this
-implementation based on his [add-elixir-client
-branch](https://github.com/brandonpollack23/conjure/tree/add-elixir-client) in
-his fork of Conjure but started with the Scheme client.
-
-This is a proof of concept to demonstrate that you can create a new Conjure
-client without having it merged into the main Conjure codebase.
-
-### How to use this Elixir client
-
-- Add it to your plugin manager's configuration and install it (clones this
-repo).
-- Configure your Conjure plugin to:
-    - Add the `elixir` filetype.
-
-    ```lua
-        vim.g["conjure#filetypes"] = { "clojure", "fennel", "hy", "racket", "scheme", "lua", "lisp", "python", "rust", "sql", "javascript", "elixir" }
-    ```
-
-    - Use `conjurex.client.elixir.stdio` as the filetype handler for Elixir
-    files.
-
-        ```lua
-        vim.g["conjure#filetype#elixir"] = "conjurex.client.elixir.stdio"
-        ```
-
-- After generating the tags file (`:he helptags`), you should be able to help using `:he
-  conjurex-client-elixir-stdio`.
+*01/02/2026: The code for this client was merged into
+[Conjure](https://github.com/Olical/conjure) with [commit 6770556](https://github.com/Olical/conjure/commit/67705566318002cc0a88b075f695518a43aa0ca7).*
 
 
-## Python client
+### Python
 
 *Broken: still a work in progress!*
-
 
 The original Python client was created by someone else.
 
 I contributed small changes to make evaluating Python *forms* (statements, etc.)
-easier. From the language user's perspective, things should *just work*. A large
-challenge of this comes from Python not being a `Lisp` language.
+easier. From the language user's perspective, things should *just work*. The big
+challenge for this client comes from Python not being a `Lisp` language.
 
-Another problem with the Python client is how it deals with the notion of
-`return value` vs `printed output`. I see a disconnect between what you see in
-your buffer and what you see when you type things directly into a REPL. I want
-to close that gap so you don't need to have the HUD (heads-up display) or the
-Conjure log buffer opened.
+So, the Python client has to deal with the notion of `return value` vs `printed
+output`. I see a gap between what you see in your buffer and what you see when
+you type things directly into a REPL. I want to close that gap so you don't need
+to have the HUD (heads-up display) or the Conjure log buffer opened.
 
-### How to use this Python client
+#### How to use this Python client
 
 - Add it to your plugin manager's configuration and install it.
 - Configure your Conjure plugin to:

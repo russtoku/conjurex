@@ -47,8 +47,6 @@ CLIENTS                                                     *conjurex-clients*
 These are additional clients for Conjure. You can access their
 documentation below or through the `:help conjurex-client-*` command.
 
- - |conjurex-client-elixir-stdio|
- - |conjurex-client-ruby-stdio|
 
 
 vim:tw=78:sw=2:ts=2:ft=help:norl:et:listchars=
