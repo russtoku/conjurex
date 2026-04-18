@@ -1,8 +1,8 @@
 -- [nfnl] fnl/conjurex/client/python/stdio.fnl
 local _local_1_ = require("conjure.nfnl.module")
-local autoload = _local_1_["autoload"]
-local define = _local_1_["define"]
-local a = autoload("nfnl.core")
+local autoload = _local_1_.autoload
+local define = _local_1_.define
+local core = autoload("nfnl.core")
 local b64 = autoload("conjure.remote.transport.base64")
 local client = autoload("conjure.client")
 local config = autoload("conjure.config")
@@ -75,7 +75,7 @@ end
 M["str-is-python-expr?"] = function(s)
   local parser = vim.treesitter.get_string_parser(s, "python")
   local result = parser:parse()
-  local tree = a.get(result, 1)
+  local tree = core.get(result, 1)
   local root = tree:root()
   return ((1 == root:child_count()) and M["is-expression?"](root:child(0)))
 end
@@ -93,50 +93,73 @@ end
 local function is_dots_3f(s)
   return (string.sub(s, 1, 3) == "...")
 end
-M["format-msg"] = function(msg)
-  log.dbg(("M.format-msg: >> " .. msg .. "<<"))
+local function error_3f(s)
+  return not not string.find(s, "Error: ")
+end
+local function get_error_message(s)
   local function _9_(_241)
-    return not is_dots_3f(_241)
+    return string.find(_241, "[^\n]*Error: ")
   end
   local function _10_(_241)
+    return not is_dots_3f(_241)
+  end
+  local function _11_(_241)
     return ("" ~= _241)
   end
-  return a.filter(_9_, a.filter(_10_, text["split-lines"](msg)))
+  return core.filter(_9_, core.filter(_10_, core.filter(_11_, text["split-lines"](s))))
+end
+local function get_normal_message(s)
+  log.dbg(("get-normal-message: >>" .. s .. "<<"))
+  local function _12_(_241)
+    return not is_dots_3f(_241)
+  end
+  local function _13_(_241)
+    return ("" ~= _241)
+  end
+  return core.filter(_12_, core.filter(_13_, text["split-lines"](s)))
+end
+M["format-msg"] = function(s)
+  log.dbg(("M.format-msg: >> " .. s .. "<<"))
+  if error_3f(s) then
+    return get_error_message(s)
+  else
+    return get_normal_message(s)
+  end
 end
 local function get_console_output_msgs(msgs)
-  local function _11_(_241)
+  local function _15_(_241)
     return (M["comment-prefix"] .. "(out) " .. _241)
   end
-  return a.map(_11_, a.butlast(msgs))
+  return core.map(_15_, core.butlast(msgs))
 end
 local function get_expression_result(msgs)
-  local result = a.last(msgs)
-  if (a["nil?"](result) or is_dots_3f(result)) then
+  local result = core.last(msgs)
+  if (core["nil?"](result) or is_dots_3f(result)) then
     return nil
   else
     return result
   end
 end
 local function get_all_console_output(msgs)
-  local function _13_(_241)
+  local function _17_(_241)
     return (M["comment-prefix"] .. "(out) " .. _241)
   end
-  return a.map(_13_, msgs)
+  return core.map(_17_, msgs)
 end
 local function get_all_output_msgs(msgs)
   return str.join("\n", msgs)
 end
 M.unbatch = function(msgs)
-  local function _14_(_241)
-    return (a.get(_241, "out") or a.get(_241, "err"))
+  local function _18_(_241)
+    return (core.get(_241, "out") or core.get(_241, "err"))
   end
-  return str.join("", a.map(_14_, msgs))
+  return str.join("", core.map(_18_, msgs))
 end
 local function log_repl_output(msgs)
   local msgs0 = M["format-msg"](M.unbatch(msgs))
   local console_output_msgs = get_console_output_msgs(msgs0)
   local cmd_result = get_expression_result(msgs0)
-  if not a["empty?"](console_output_msgs) then
+  if not core["empty?"](console_output_msgs) then
     log.append(console_output_msgs)
   else
   end
@@ -147,9 +170,9 @@ local function log_repl_output(msgs)
   end
 end
 M["eval-str"] = function(opts)
-  log.dbg(("M.eval-str opts >> " .. a["pr-str"](opts) .. "<<"))
+  log.dbg(("M.eval-str opts >> " .. core["pr-str"](opts) .. "<<"))
   local function return_handler(msgs)
-    log.dbg(("client.python.stdio: in return-handler; msgs>" .. a["pr-str"](msgs) .. "<"))
+    log.dbg(("client.python.stdio: in return-handler; msgs>" .. core["pr-str"](msgs) .. "<"))
     local msgs0 = M["format-msg"](M.unbatch(msgs))
     local cmd_result = get_all_output_msgs(msgs0)
     local console_result = get_all_console_output(msgs0)
@@ -163,20 +186,20 @@ M["eval-str"] = function(opts)
       return nil
     end
   end
-  local function _19_(repl)
+  local function _23_(repl)
     return repl.send(prep_code(opts.code), return_handler, {["batch?"] = true})
   end
-  return with_repl_or_warn(_19_)
+  return with_repl_or_warn(_23_)
 end
 M["eval-file"] = function(opts)
-  return M["eval-str"](a.assoc(opts, "code", a.slurp(opts["file-path"])))
+  return M["eval-str"](core.assoc(opts, "code", core.slurp(opts["file-path"])))
 end
 M["get-help"] = function(code)
   return str.join("", {"help(", str.trim(code), ")"})
 end
 M["doc-str"] = function(opts)
   if M["str-is-python-expr?"](opts.code) then
-    return M["eval-str"](a.assoc(opts, "code", M["get-help"](opts.code)))
+    return M["eval-str"](core.assoc(opts, "code", M["get-help"](opts.code)))
   else
     return nil
   end
@@ -190,7 +213,7 @@ M.stop = function()
   if repl then
     repl.destroy()
     display_repl_status("stopped")
-    return a.assoc(state(), "repl", nil)
+    return core.assoc(state(), "repl", nil)
   else
     return nil
   end
@@ -201,25 +224,25 @@ M.start = function()
   if state("repl") then
     return log.append({(M["comment-prefix"] .. "Can't start, REPL is already running."), (M["comment-prefix"] .. "Stop the REPL with " .. config["get-in"]({"mapping", "prefix"}) .. cfg({"mapping", "stop"}))}, {["break?"] = true})
   else
-    local function _22_()
+    local function _26_()
       return ts["add-language"]("python")
     end
-    if not pcall(_22_) then
+    if not pcall(_26_) then
       return log.append({(M["comment-prefix"] .. "(error) The python client requires a python treesitter parser in order to function."), (M["comment-prefix"] .. "(error) See https://github.com/nvim-treesitter/nvim-treesitter"), (M["comment-prefix"] .. "(error) for installation instructions.")})
     else
-      local function _23_()
-        local function _24_(repl)
-          local function _25_(msgs)
+      local function _27_()
+        local function _28_(repl)
+          local function _29_(msgs)
             return nil
           end
-          return repl.send(prep_code(M["initialise-repl-code"]), _25_, nil)
+          return repl.send(prep_code(M["initialise-repl-code"]), _29_, nil)
         end
-        return display_repl_status("started", with_repl_or_warn(_24_))
+        return display_repl_status("started", with_repl_or_warn(_28_))
       end
-      local function _26_(err)
+      local function _30_(err)
         return display_repl_status(err)
       end
-      local function _27_(code, signal)
+      local function _31_(code, signal)
         log.append({(M["comment-prefix"] .. "on-exit: code=>" .. code .. "<, signal=" .. signal)})
         if (("number" == type(code)) and (code > 0)) then
           log.append({(M["comment-prefix"] .. "process exited with code " .. code)})
@@ -231,10 +254,10 @@ M.start = function()
         end
         return M.stop()
       end
-      local function _30_(msg)
+      local function _34_(msg)
         return log.dbg(M["format-msg"](M.unbatch({msg})), {["join-first?"] = true})
       end
-      return a.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt-pattern"}), cmd = cfg({"command"}), ["delay-stderr-ms"] = cfg({"delay-stderr-ms"}), ["on-success"] = _23_, ["on-error"] = _26_, ["on-exit"] = _27_, ["on-stray-output"] = _30_}))
+      return core.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt-pattern"}), cmd = cfg({"command"}), ["delay-stderr-ms"] = cfg({"delay-stderr-ms"}), ["on-success"] = _27_, ["on-error"] = _30_, ["on-exit"] = _31_, ["on-stray-output"] = _34_}))
     end
   end
 end
@@ -243,11 +266,11 @@ M["on-exit"] = function()
   return M.stop()
 end
 M.interrupt = function()
-  local function _33_(repl)
+  local function _37_(repl)
     log.append({(M["comment-prefix"] .. " Sending interrupt signal.")}, {["break?"] = true})
     return repl["send-signal"]("sigint")
   end
-  return with_repl_or_warn(_33_)
+  return with_repl_or_warn(_37_)
 end
 M["on-load"] = function()
   if config["get-in"]({"client_on_load"}) then

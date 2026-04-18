@@ -1,5 +1,5 @@
 (local {: autoload : define} (require :conjure.nfnl.module))
-(local a (autoload :nfnl.core))
+(local core (autoload :nfnl.core))
 (local b64 (autoload :conjure.remote.transport.base64))
 (local client (autoload :conjure.client))
 (local config (autoload :conjure.config))
@@ -113,7 +113,7 @@
   [s]
   (let [parser (vim.treesitter.get_string_parser s "python")
         result (parser:parse)
-        tree (a.get result 1)
+        tree (core.get result 1)
         root (tree:root)]
     (and (= 1 (root:child_count))
          (M.is-expression? (root:child 0)))))
@@ -139,11 +139,33 @@
 (fn is-dots? [s]
   (= (string.sub s 1 3) "..."))
 
-(fn M.format-msg [msg]
-  (log.dbg (.. "M.format-msg: >> " msg "<<"))
-  (->> (text.split-lines msg)
-       (a.filter #(~= "" $1))
-       (a.filter #(not (is-dots? $1)))))
+; Does a message string have an error message in it?
+(fn error? [s]
+  (not (not (string.find s "Error: "))))
+
+; If a message string has an error message in it, then return that error.
+(fn get-error-message [s]
+  (->> (text.split-lines s)
+       (core.filter #(~= "" $1)) ; drop blank lines
+       (core.filter #(not (is-dots? $1))) ; drop continuation prompt lines
+       (core.filter #(string.find $1 "[^\n]*Error: "))
+       ))
+
+; Split message string with embedded newlines into separate message lines.
+(fn get-normal-message [s]
+  (log.dbg (.. "get-normal-message: >>" s "<<"))
+  (->> (text.split-lines s)
+       (core.filter #(~= "" $1))
+       (core.filter #(not (is-dots? $1)))
+       ))
+
+; Split message string with embedded newlines into separate message lines.
+(fn M.format-msg [s]
+  (log.dbg (.. "M.format-msg: >> " s "<<"))
+  (if (error? s)
+      (get-error-message s)
+      (get-normal-message s)
+      ))
 
 ;; FIXME: Incorrect assumption: The last line in msgs from the REPL is the return
 ;; value or results of "evaluating" the Python expression, variable, or
@@ -151,13 +173,13 @@
 ;; assumption. Also log-repl-output makes this assumption because it calls
 ;; get-console-output-msgs. Additionally, eval-str calls log-repl-output.
 (fn get-console-output-msgs [msgs]
-  (->> (a.butlast msgs)
-       (a.map #(.. M.comment-prefix "(out) " $1))))
+  (->> (core.butlast msgs)
+       (core.map #(.. M.comment-prefix "(out) " $1))))
 
 (fn get-expression-result [msgs]
-  (let [result (a.last msgs)]
+  (let [result (core.last msgs)]
     (if
-      (or (a.nil? result) (is-dots? result))
+      (or (core.nil? result) (is-dots? result))
       nil
       result)))
 
@@ -165,7 +187,7 @@
   "Return a sequential table of message lines prefixed with the comment-prefix
   and '(out)'. This is intended to be passed to the log.append function."
   (->> msgs
-       (a.map #(.. M.comment-prefix "(out) " $1))))
+       (core.map #(.. M.comment-prefix "(out) " $1))))
 
 (fn get-all-output-msgs [msgs]
   "Return the msgs in a single string. This is intended to be inserted into the
@@ -175,27 +197,27 @@
 ; Does this join the stdout and stderr msgs?
 (fn M.unbatch [msgs]
   (->> msgs
-       (a.map #(or (a.get $1 :out) (a.get $1 :err)))
+       (core.map #(or (core.get $1 :out) (core.get $1 :err)))
        (str.join "")))
 
 (fn log-repl-output [msgs]
   (let [msgs (-> msgs M.unbatch M.format-msg)
         console-output-msgs (get-console-output-msgs msgs)
         cmd-result (get-expression-result msgs)]
-    (when (not (a.empty? console-output-msgs))
+    (when (not (core.empty? console-output-msgs))
       (log.append console-output-msgs))
     (when cmd-result
       (log.append [cmd-result]))))
 
 (fn M.eval-str [opts]
-  (log.dbg (.. "M.eval-str opts >> " (a.pr-str opts) "<<"))
+  (log.dbg (.. "M.eval-str opts >> " (core.pr-str opts) "<<"))
 
   ;; Handle the return messages from the REPL. This is intended to be passed to
   ;; the send function of the REPL instance.
   ;; Decides what is returned as the result of an evaluation vs. printed
   ;; outpupt. For the standard Python REPL, it is the same thing.
   (fn return-handler [msgs]
-    (log.dbg (.. "client.python.stdio: in return-handler; msgs>" (a.pr-str msgs) "<"))
+    (log.dbg (.. "client.python.stdio: in return-handler; msgs>" (core.pr-str msgs) "<"))
     (let [msgs (-> msgs M.unbatch M.format-msg)
           cmd-result (get-all-output-msgs msgs)
           console-result (get-all-console-output msgs)]
@@ -212,14 +234,14 @@
         {:batch? true}))))
 
 (fn M.eval-file [opts]
-  (M.eval-str (a.assoc opts :code (a.slurp opts.file-path))))
+  (M.eval-str (core.assoc opts :code (core.slurp opts.file-path))))
 
 (fn M.get-help [code]
   (str.join "" ["help(" (str.trim code) ")"]))
 
 (fn M.doc-str [opts]
   (when (M.str-is-python-expr? opts.code)
-    (M.eval-str (a.assoc opts :code (M.get-help opts.code)))))
+    (M.eval-str (core.assoc opts :code (M.get-help opts.code)))))
 
 (fn display-repl-status [status]
   ( log.append
@@ -234,7 +256,7 @@
     (when repl
       (repl.destroy)
       (display-repl-status :stopped)
-      (a.assoc (state) :repl nil))))
+      (core.assoc (state) :repl nil))))
 
 (set M.initialise-repl-code
   ;; We set the `__name__` to something else so `__main__` blocks aren't executed.
@@ -254,7 +276,7 @@
       (log.append [(.. M.comment-prefix "(error) The python client requires a python treesitter parser in order to function.")
                    (.. M.comment-prefix "(error) See https://github.com/nvim-treesitter/nvim-treesitter")
                    (.. M.comment-prefix "(error) for installation instructions.")])
-      (a.assoc  ; Start a REPL and add it to our client state.
+      (core.assoc  ; Start a REPL and add it to our client state.
         (state) :repl
         (stdio.start ; stdio.start takes a table of opts to create a REPL process.
           {:prompt-pattern (cfg [:prompt-pattern])

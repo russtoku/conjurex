@@ -1,59 +1,55 @@
-(local {: autoload} (require :nfnl.module))
-(local a (autoload :nfnl.core))
-(local str (autoload :nfnl.string))
+(local {: autoload : define} (require :conjure.nfnl.module))
+(local core (autoload :conjure.nfnl.core))
+(local str (autoload :conjure.nfnl.string))
 
-(local version "conjurex.text")
+(local M (define :conjure.text))
 
-(fn trailing-newline? [s]
+(fn M.trailing-newline? [s]
   (string.match s "\r?\n$"))
 
-(fn trim-last-newline [s]
-  "Returns s without a trailing newline and 1 when trailing newline is stripped
-  or 0 when not."
+(fn M.trim-last-newline [s]
   (string.gsub s "\r?\n$" ""))
 
-(fn left-sample [s limit]
+(fn M.left-sample [s limit]
   (let [flat (-> (string.gsub s "\n" " ")
                  (string.gsub "%s+" " ")
                  (str.trim))]
-    (if (>= limit (a.count flat))
+    (if (>= limit (core.count flat))
       flat
-      (.. (string.sub flat 0 (a.dec limit)) "..."))))
+      (.. (string.sub flat 0 (core.dec limit)) "..."))))
 
-(fn right-sample [s limit]
-  (string.reverse (left-sample (string.reverse s) limit)))
+(fn M.right-sample [s limit]
+  (string.reverse (M.left-sample (string.reverse s) limit)))
 
-(fn split-lines [s]
+(fn M.split-lines [s]
   (str.split s "\r?\n"))
 
-(fn prefixed-lines [s prefix opts]
-  "Returns a list of lines split from a string. Each line is prefixed with the
-  prefix string. The option, :skip-first?, will cause the first line not to be
-  prefixed."
-  (->> (split-lines s)
-       (a.map-indexed
+(fn M.prefixed-lines [s prefix opts]
+  (->> (M.split-lines s)
+       (core.map-indexed
          (fn [[n line]]
            (if (and (= 1 n)
-                    (a.get opts :skip-first?))
+                    (core.get opts :skip-first?))
              line
              (.. prefix line))))))
 
-(fn starts-with [str start]
-  (when str
-    (= (string.sub str 1 (a.count start)) start)))
+(fn M.starts-with [str start]
+  (when (and str start)
+    (vim.startswith str start)))
 
-(fn ends-with [str end]
-  (when str
-    (or (= end "") (= end (string.sub str (- (a.count end)))))))
+(fn M.ends-with [str end]
+  (when (and str end)
+    (or (= end "")
+        (vim.endswith str end))))
 
-(fn first-and-last-chars [str]
+(fn M.first-and-last-chars [str]
   (when str
-    (if (> (a.count str) 1)
+    (if (> (core.count str) 1)
       (.. (string.sub str 1 1)
           (string.sub str -1 -1))
       str)))
 
-(fn strip-ansi-escape-sequences [s]
+(fn M.strip-ansi-escape-sequences [s]
   (-> s
       (string.gsub "\x1b%[%d+;%d+;%d+;%d+;%d+m" "")
       (string.gsub "\x1b%[%d+;%d+;%d+;%d+m" "")
@@ -61,26 +57,15 @@
       (string.gsub "\x1b%[%d+;%d+m" "")
       (string.gsub "\x1b%[%d+m" "")))
 
-(fn chars [s]
+(fn M.chars [s]
   (local res [])
   (when s
     (each [c (string.gmatch s ".")]
       (table.insert res c)))
   res)
 
-(fn upper-first [s]
+(fn M.upper-first [s]
   (when s
     (s:gsub "^%l" string.upper)))
 
-{: chars
- : ends-with
- : first-and-last-chars
- : left-sample
- : prefixed-lines
- : right-sample
- : split-lines
- : starts-with
- : strip-ansi-escape-sequences
- : trailing-newline?
- : trim-last-newline
- : upper-first}
+M
