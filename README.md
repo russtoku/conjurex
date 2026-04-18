@@ -25,7 +25,8 @@ experiments.
 
 ## About me
 
-- Contributed some improvements to the **Python** client.
+- Contributed small changes to make evaluating Python *forms* (statements, expressions,
+etc.) easier.
 - Created the **SQL** and **snd-s7** clients.
 - Helped with the [migration](https://github.com/Olical/conjure/discussions/605)
 of Conjure off of [Aniseed](https://github.com/Olical/aniseed) and onto
@@ -47,25 +48,81 @@ of Conjure off of [Aniseed](https://github.com/Olical/aniseed) and onto
 
 ### Python
 
-*Broken: still a work in progress!*
+*04/17/2026: Working*
 
 The original Python client was created by someone else.
 
-I contributed small changes to make evaluating Python *forms* (statements, etc.)
-easier. From the language user's perspective, things should *just work*. The big
-challenge for this client comes from Python not being a `Lisp` language.
+From the language user's perspective, things should *just work*. The big challenge for
+this client comes from Python not being a `Lisp` language.
 
-So, the Python client has to deal with the notion of `return value` vs `printed
-output`. I see a gap between what you see in your buffer and what you see when
-you type things directly into a REPL. I want to close that gap so you don't need
-to have the HUD (heads-up display) or the Conjure log buffer opened.
+The Python client has to deal with the notion of `return value` vs `printed output`. This
+Python client reports whatever is returned by the Python REPL. There is not attempt to
+distinguish between a value and printed output. This allows you to have the HUD (heads-up
+display) and the Conjure log buffer closed.
+
+The output/return value is munged into one line of virtual text in the code buffer. When
+you want to see things in a more natural format, open the Conjure log buffer.
+
 
 #### How to use this Python client
 
 - Add it to your plugin manager's configuration and install it.
-- Configure your Conjure plugin to:
-    - Use `conjurex.client.python.stdio` as the filetype handler for Python files.
-        ```lua
-        vim.g["conjure#filetype#python"] = "conjurex.client.python.stdio"
-        ```
+- Configure your Conjure plugin to use `conjurex.client.python.stdio` as the filetype
+handler for Python files.
+    ```lua
+    -- Lua config
+    vim.g["conjure#filetype#python"] = "conjurex.client.python.stdio"
+    ```
+    or
+    ```vimscript
+    " Vimscript config
+    let g:conjure#filetype#python = "conjurex.client.python.stdio"
+    ```
+
+#### Using this Python client
+
+When evaluating code snippets, you can see the output in a single line in virtual text.
+
+<figure>
+    <img src="images/py-client-printed-output.png" width= 400>
+    <figcaption>Fig. 1 - Printed output</figcaption>
+</figure>
+<br>
+
+<figure>
+    <img src="images/py-client-return-value-number.png" width= 400>
+    <figcaption>Fig. 2 - Numeric return value</figcaption>
+</figure>
+<br>
+
+<figure>
+    <img src="images/py-client-return-value-string.png" width= 400>
+    <figcaption>Fig. 3 - String return value</figcaption>
+</figure>
+<br>
+
+When an error occurs, just the error message is returned; not the entire traceback.
+
+<figure>
+    <img src="images/py-client-error.png" width= 400>
+    <figcaption>Fig. 4 - Error message</figcaption>
+</figure>
+<br>
+
+Multi-line output and return value are combined into one line of virtual text in the code
+buffer. You'll need to open the Conjure log buffer associated with the code buffer to see
+a better format of the output and return value.
+
+<figure>
+    <img src="images/py-client-multi-line-output.png" width= 400>
+    <figcaption>Fig. 5 - Printed output and return value in code buffer</figcaption>
+</figure>
+<br>
+
+<figure>
+    <img src="images/py-client-multi-line-output-log.png" width= 400>
+    <figcaption>Fig. 6 - Printed output and return value in log buffer</figcaption>
+</figure>
+<br>
+
 
