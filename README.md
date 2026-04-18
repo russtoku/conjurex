@@ -81,48 +81,56 @@ handler for Python files.
 
 #### Using this Python client
 
+<p>
 When evaluating code snippets, you can see the output in a single line in virtual text.
+</p>
 
+<p>
 <figure>
     <img src="images/py-client-printed-output.png" width= 400>
     <figcaption>Fig. 1 - Printed output</figcaption>
 </figure>
-<br>
+</p>
 
+<p>
 <figure>
     <img src="images/py-client-return-value-number.png" width= 400>
     <figcaption>Fig. 2 - Numeric return value</figcaption>
 </figure>
-<br>
+</p>
 
+<p>
 <figure>
     <img src="images/py-client-return-value-string.png" width= 400>
     <figcaption>Fig. 3 - String return value</figcaption>
 </figure>
-<br>
+</p>
 
 When an error occurs, just the error message is returned; not the entire traceback.
 
+<p>
 <figure>
     <img src="images/py-client-error.png" width= 400>
     <figcaption>Fig. 4 - Error message</figcaption>
 </figure>
-<br>
+</p>
 
+<p>
 Multi-line output and return value are combined into one line of virtual text in the code
 buffer. You'll need to open the Conjure log buffer associated with the code buffer to see
 a better format of the output and return value.
+</p>
 
+<p>
 <figure>
     <img src="images/py-client-multi-line-output.png" width= 400>
     <figcaption>Fig. 5 - Printed output and return value in code buffer</figcaption>
 </figure>
-<br>
+</p>
 
+<p>
 <figure>
     <img src="images/py-client-multi-line-output-log.png" width= 400>
     <figcaption>Fig. 6 - Printed output and return value in log buffer</figcaption>
 </figure>
-<br>
-
-
+</p>
