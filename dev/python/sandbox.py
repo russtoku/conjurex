@@ -51,6 +51,9 @@ def fn_with_multiline_str():
 
 fn_with_multiline_str()
 
+# A non-existent or not-installed library.
+import nothing
+
 import csv
 from datetime import datetime
 

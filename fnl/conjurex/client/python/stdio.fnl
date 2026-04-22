@@ -120,7 +120,7 @@
 
 (fn get-exec-str
   [s]
-  (.. "import base64\nexec(base64.b64decode('" (b64.encode s) "'))\n"))
+  (.. "exec(base64.b64decode('" (b64.encode s) "'))\n"))
 
 (fn prep-code [s]
   (let [python-expr (M.str-is-python-expr? s)]
@@ -167,22 +167,6 @@
       (get-normal-message s)
       ))
 
-;; FIXME: Incorrect assumption: The last line in msgs from the REPL is the return
-;; value or results of "evaluating" the Python expression, variable, or
-;; statement. get-console-output-msgs and get-expression-result embody this
-;; assumption. Also log-repl-output makes this assumption because it calls
-;; get-console-output-msgs. Additionally, eval-str calls log-repl-output.
-(fn get-console-output-msgs [msgs]
-  (->> (core.butlast msgs)
-       (core.map #(.. M.comment-prefix "(out) " $1))))
-
-(fn get-expression-result [msgs]
-  (let [result (core.last msgs)]
-    (if
-      (or (core.nil? result) (is-dots? result))
-      nil
-      result)))
-
 (fn get-all-console-output [msgs]
   "Return a sequential table of message lines prefixed with the comment-prefix
   and '(out)'. This is intended to be passed to the log.append function."
@@ -195,29 +179,21 @@
   (str.join "\n" msgs))
 
 ; Does this join the stdout and stderr msgs?
+; No, for a list of messages, it gets the text from stdout or stderr.
 (fn M.unbatch [msgs]
   (->> msgs
        (core.map #(or (core.get $1 :out) (core.get $1 :err)))
        (str.join "")))
 
-(fn log-repl-output [msgs]
-  (let [msgs (-> msgs M.unbatch M.format-msg)
-        console-output-msgs (get-console-output-msgs msgs)
-        cmd-result (get-expression-result msgs)]
-    (when (not (core.empty? console-output-msgs))
-      (log.append console-output-msgs))
-    (when cmd-result
-      (log.append [cmd-result]))))
-
 (fn M.eval-str [opts]
-  (log.dbg (.. "M.eval-str opts >> " (core.pr-str opts) "<<"))
+  (log.dbg (.. "python.stdio.eval-str opts: '" (core.str opts) "'"))
 
   ;; Handle the return messages from the REPL. This is intended to be passed to
   ;; the send function of the REPL instance.
   ;; Decides what is returned as the result of an evaluation vs. printed
   ;; outpupt. For the standard Python REPL, it is the same thing.
   (fn return-handler [msgs]
-    (log.dbg (.. "client.python.stdio: in return-handler; msgs>" (core.pr-str msgs) "<"))
+    (log.dbg (.. "python.stdio.eval-str: in return-handler; msgs:" (core.str msgs) "'"))
     (let [msgs (-> msgs M.unbatch M.format-msg)
           cmd-result (get-all-output-msgs msgs)
           console-result (get-all-console-output msgs)]
@@ -285,13 +261,17 @@
 
            :on-success
            (fn []
-             (display-repl-status :started
+             (display-repl-status :started)
               (with-repl-or-warn
                (fn [repl]
                  (repl.send
+                   "import base64\n"
+                   (fn [msgs] nil)
+                   nil)
+                 (repl.send
                    (prep-code M.initialise-repl-code)
                    (fn [msgs] nil)
-                   nil)))))
+                   nil))))
 
            :on-error
            (fn [err]
@@ -300,7 +280,7 @@
            :on-exit
            (fn [code signal]
              ;; FIXME: The log statements don't appear in the log file.
-             (log.append [(.. M.comment-prefix "on-exit: code=>" code "<, signal=" signal)])
+             (log.append [(.. M.comment-prefix "on-exit: code='" code "', signal=" signal)])
              (when (and (= :number (type code)) (> code 0))
                (log.append [(.. M.comment-prefix "process exited with code " code)]))
              (when (and (= :number (type signal)) (> signal 0))

@@ -80,7 +80,7 @@ M["str-is-python-expr?"] = function(s)
   return ((1 == root:child_count()) and M["is-expression?"](root:child(0)))
 end
 local function get_exec_str(s)
-  return ("import base64\nexec(base64.b64decode('" .. b64.encode(s) .. "'))\n")
+  return ("exec(base64.b64decode('" .. b64.encode(s) .. "'))\n")
 end
 local function prep_code(s)
   local python_expr = M["str-is-python-expr?"](s)
@@ -126,53 +126,25 @@ M["format-msg"] = function(s)
     return get_normal_message(s)
   end
 end
-local function get_console_output_msgs(msgs)
+local function get_all_console_output(msgs)
   local function _15_(_241)
     return (M["comment-prefix"] .. "(out) " .. _241)
   end
-  return core.map(_15_, core.butlast(msgs))
-end
-local function get_expression_result(msgs)
-  local result = core.last(msgs)
-  if (core["nil?"](result) or is_dots_3f(result)) then
-    return nil
-  else
-    return result
-  end
-end
-local function get_all_console_output(msgs)
-  local function _17_(_241)
-    return (M["comment-prefix"] .. "(out) " .. _241)
-  end
-  return core.map(_17_, msgs)
+  return core.map(_15_, msgs)
 end
 local function get_all_output_msgs(msgs)
   return str.join("\n", msgs)
 end
 M.unbatch = function(msgs)
-  local function _18_(_241)
+  local function _16_(_241)
     return (core.get(_241, "out") or core.get(_241, "err"))
   end
-  return str.join("", core.map(_18_, msgs))
-end
-local function log_repl_output(msgs)
-  local msgs0 = M["format-msg"](M.unbatch(msgs))
-  local console_output_msgs = get_console_output_msgs(msgs0)
-  local cmd_result = get_expression_result(msgs0)
-  if not core["empty?"](console_output_msgs) then
-    log.append(console_output_msgs)
-  else
-  end
-  if cmd_result then
-    return log.append({cmd_result})
-  else
-    return nil
-  end
+  return str.join("", core.map(_16_, msgs))
 end
 M["eval-str"] = function(opts)
-  log.dbg(("M.eval-str opts >> " .. core["pr-str"](opts) .. "<<"))
+  log.dbg(("python.stdio.eval-str opts: '" .. core.str(opts) .. "'"))
   local function return_handler(msgs)
-    log.dbg(("client.python.stdio: in return-handler; msgs>" .. core["pr-str"](msgs) .. "<"))
+    log.dbg(("python.stdio.eval-str: in return-handler; msgs:" .. core.str(msgs) .. "'"))
     local msgs0 = M["format-msg"](M.unbatch(msgs))
     local cmd_result = get_all_output_msgs(msgs0)
     local console_result = get_all_console_output(msgs0)
@@ -186,10 +158,10 @@ M["eval-str"] = function(opts)
       return nil
     end
   end
-  local function _23_(repl)
+  local function _19_(repl)
     return repl.send(prep_code(opts.code), return_handler, {["batch?"] = true})
   end
-  return with_repl_or_warn(_23_)
+  return with_repl_or_warn(_19_)
 end
 M["eval-file"] = function(opts)
   return M["eval-str"](core.assoc(opts, "code", core.slurp(opts["file-path"])))
@@ -224,26 +196,31 @@ M.start = function()
   if state("repl") then
     return log.append({(M["comment-prefix"] .. "Can't start, REPL is already running."), (M["comment-prefix"] .. "Stop the REPL with " .. config["get-in"]({"mapping", "prefix"}) .. cfg({"mapping", "stop"}))}, {["break?"] = true})
   else
-    local function _26_()
+    local function _22_()
       return ts["add-language"]("python")
     end
-    if not pcall(_26_) then
+    if not pcall(_22_) then
       return log.append({(M["comment-prefix"] .. "(error) The python client requires a python treesitter parser in order to function."), (M["comment-prefix"] .. "(error) See https://github.com/nvim-treesitter/nvim-treesitter"), (M["comment-prefix"] .. "(error) for installation instructions.")})
     else
-      local function _27_()
-        local function _28_(repl)
-          local function _29_(msgs)
+      local function _23_()
+        display_repl_status("started")
+        local function _24_(repl)
+          local function _25_(msgs)
             return nil
           end
-          return repl.send(prep_code(M["initialise-repl-code"]), _29_, nil)
+          repl.send("import base64\n", _25_, nil)
+          local function _26_(msgs)
+            return nil
+          end
+          return repl.send(prep_code(M["initialise-repl-code"]), _26_, nil)
         end
-        return display_repl_status("started", with_repl_or_warn(_28_))
+        return with_repl_or_warn(_24_)
       end
-      local function _30_(err)
+      local function _27_(err)
         return display_repl_status(err)
       end
-      local function _31_(code, signal)
-        log.append({(M["comment-prefix"] .. "on-exit: code=>" .. code .. "<, signal=" .. signal)})
+      local function _28_(code, signal)
+        log.append({(M["comment-prefix"] .. "on-exit: code='" .. code .. "', signal=" .. signal)})
         if (("number" == type(code)) and (code > 0)) then
           log.append({(M["comment-prefix"] .. "process exited with code " .. code)})
         else
@@ -254,10 +231,10 @@ M.start = function()
         end
         return M.stop()
       end
-      local function _34_(msg)
+      local function _31_(msg)
         return log.dbg(M["format-msg"](M.unbatch({msg})), {["join-first?"] = true})
       end
-      return core.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt-pattern"}), cmd = cfg({"command"}), ["delay-stderr-ms"] = cfg({"delay-stderr-ms"}), ["on-success"] = _27_, ["on-error"] = _30_, ["on-exit"] = _31_, ["on-stray-output"] = _34_}))
+      return core.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt-pattern"}), cmd = cfg({"command"}), ["delay-stderr-ms"] = cfg({"delay-stderr-ms"}), ["on-success"] = _23_, ["on-error"] = _27_, ["on-exit"] = _28_, ["on-stray-output"] = _31_}))
     end
   end
 end
@@ -266,11 +243,11 @@ M["on-exit"] = function()
   return M.stop()
 end
 M.interrupt = function()
-  local function _37_(repl)
+  local function _34_(repl)
     log.append({(M["comment-prefix"] .. " Sending interrupt signal.")}, {["break?"] = true})
     return repl["send-signal"]("sigint")
   end
-  return with_repl_or_warn(_37_)
+  return with_repl_or_warn(_34_)
 end
 M["on-load"] = function()
   if config["get-in"]({"client_on_load"}) then
