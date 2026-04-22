@@ -50,6 +50,9 @@ def fn_with_multiline_str():
 
 fn_with_multiline_str()
 
+# No such module
+import nothing
+
 import csv
 from datetime import datetime
 

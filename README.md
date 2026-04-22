@@ -135,3 +135,10 @@ a better format of the output and return value.
     <figcaption>Fig. 6 - Printed output and return value in log buffer</figcaption>
 </figure>
 </p>
+
+<p>
+<figure>
+    <img src="images/py-client-plot.png" width= 500>
+    <figcaption>Fig. 7 - Plot from Matplotlib</figcaption>
+</figure>
+</p>
