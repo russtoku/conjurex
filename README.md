@@ -63,6 +63,7 @@ display) and the Conjure log buffer closed.
 The output/return value is munged into one line of virtual text in the code buffer. When
 you want to see things in a more natural format, open the Conjure log buffer.
 
+You can also plot graphs with Matplotlib. See `dev/python/sandbox.py`.
 
 #### How to use this Python client
 
