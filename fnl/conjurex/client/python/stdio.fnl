@@ -19,8 +19,8 @@
    {:python
     {:stdio
      {:command "python3 -iq"
-      :prompt-pattern ">>> "
-      :delay-stderr-ms 10}}}})
+      :prompt_pattern ">>> "
+      :delay_stderr_ms 10}}}})
 
 (when (config.get-in [:mapping :enable_defaults])
   (config.merge
@@ -255,9 +255,9 @@
       (core.assoc  ; Start a REPL and add it to our client state.
         (state) :repl
         (stdio.start ; stdio.start takes a table of opts to create a REPL process.
-          {:prompt-pattern (cfg [:prompt-pattern])
+          {:prompt-pattern (cfg [:prompt_pattern])
            :cmd (cfg [:command])
-           :delay-stderr-ms (cfg [:delay-stderr-ms])
+           :delay-stderr-ms (cfg [:delay_stderr_ms])
 
            :on-success
            (fn []

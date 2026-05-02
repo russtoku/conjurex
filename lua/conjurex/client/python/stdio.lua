@@ -14,7 +14,7 @@ local text = autoload("conjurex.text")
 local ts = autoload("conjure.tree-sitter")
 local M = define("conjurex.client.python.stdio")
 M.version = "conjurex.client.python.stdio"
-config.merge({client = {python = {stdio = {command = "python3 -iq", ["prompt-pattern"] = ">>> ", ["delay-stderr-ms"] = 10}}}})
+config.merge({client = {python = {stdio = {command = "python3 -iq", prompt_pattern = ">>> ", delay_stderr_ms = 10}}}})
 if config["get-in"]({"mapping", "enable_defaults"}) then
   config.merge({client = {python = {stdio = {mapping = {start = "cs", stop = "cS", interrupt = "ei"}}}}})
 else
@@ -234,7 +234,7 @@ M.start = function()
       local function _31_(msg)
         return log.dbg(M["format-msg"](M.unbatch({msg})), {["join-first?"] = true})
       end
-      return core.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt-pattern"}), cmd = cfg({"command"}), ["delay-stderr-ms"] = cfg({"delay-stderr-ms"}), ["on-success"] = _23_, ["on-error"] = _27_, ["on-exit"] = _28_, ["on-stray-output"] = _31_}))
+      return core.assoc(state(), "repl", stdio.start({["prompt-pattern"] = cfg({"prompt_pattern"}), cmd = cfg({"command"}), ["delay-stderr-ms"] = cfg({"delay_stderr_ms"}), ["on-success"] = _23_, ["on-error"] = _27_, ["on-exit"] = _28_, ["on-stray-output"] = _31_}))
     end
   end
 end
