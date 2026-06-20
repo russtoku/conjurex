@@ -1,2 +1,5 @@
 README.html
 .DS_Store
+.python-version
+pyproject.toml
+uv.lock
